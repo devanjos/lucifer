@@ -12,9 +12,9 @@ public class Main {
 	private static final String SEARCH_URL = "https://consultaremedios.com.br/busca?termo=";
 
 	public static void main(String[] args) {
-		// 7848995329460
-		// 7848
-		String ean = "7848";
+		// 7896261019430
+		// 7898168731231
+		String ean = "7848995329460";
 
 		run(ean);
 	}
@@ -34,6 +34,8 @@ public class Main {
 			elements = driver.findElements(By.id("result-subtitle"));
 			if (!elements.isEmpty() && elements.get(0).getText().equals("Desculpe, mas não encontramos nenhum resultado para sua busca"))
 				System.out.println("404: " + ean);
+
+			System.out.println(driver.getCurrentUrl());
 		} finally {
 			driver.close();
 		}
