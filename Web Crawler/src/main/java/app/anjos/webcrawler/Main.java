@@ -1,8 +1,14 @@
 package app.anjos.webcrawler;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Base64;
 import java.util.List;
+import javax.imageio.ImageIO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -16,7 +22,7 @@ public class Main {
 
 	private static ChromeOptions OPTIONS;
 
-	private static final boolean SINGLE_THREAD = false;
+	private static final boolean SINGLE_THREAD = true;
 	private static int LOCK = 0;
 
 	public static void main(String[] args) throws Exception {
@@ -30,11 +36,11 @@ public class Main {
 				line = reader.readLine().split(";");
 
 				LOCK++;
-				while (!SINGLE_THREAD && LOCK > 100) {
-					Thread.sleep(500);
+				while (!SINGLE_THREAD && LOCK > 5) {
+					Thread.sleep(100);
 				}
 
-				Thread.sleep(2000);
+				Thread.sleep(500);
 				if (line.length > 1)
 					start(line[0], line[1]);
 				else
@@ -44,9 +50,14 @@ public class Main {
 	}
 
 	private static void start(String ean, String ms) throws Exception {
-		if (SINGLE_THREAD)
-			System.out.println(Thread.currentThread().getId() + " - " + run(ean, ms));
-		else {
+		if (SINGLE_THREAD) {
+			try {
+				System.out.println(Thread.currentThread().getId() + " - " + run(ean, ms));
+			} catch (Exception e) {
+				System.err.print(Thread.currentThread().getId() + " - Erro: " + ean + "\t");
+				e.printStackTrace();
+			}
+		} else {
 			new Thread(() -> {
 				try {
 					System.out.println(Thread.currentThread().getId() + " - " + run(ean, ms));
@@ -78,6 +89,9 @@ public class Main {
 			if (!elements.isEmpty() && elements.get(0).getText().equals("Desculpe, mas não encontramos nenhum resultado para sua busca"))
 				throw new Exception("404: Not Result " + ean);
 
+			if (!driver.getPageSource().contains("<a href=\"/categorias\">Categorias</a>"))
+				throw new Exception("412: Not drug " + ean);
+
 			redirectUrl = driver.getCurrentUrl();
 			if (!redirectUrl.matches("https://consultaremedios\\.com\\.br/.+/p"))
 				throw new Exception("412: Url não tratada: " + redirectUrl);
@@ -95,7 +109,7 @@ public class Main {
 					p.apresentacao = element.findElement(By.tagName("a")).getAttribute("title").replace(productName, "").trim(); // Nome da Apresentação
 
 					element = e.findElement(By.className("presentation-offer-info__img"));
-					p.img = element.getAttribute("src"); // URL da imagem
+					p.img = getByteArrayFromImageURL(element.getAttribute("src")); // URL da imagem
 				}
 			}
 
@@ -133,26 +147,27 @@ public class Main {
 			 */
 
 			driver.get(redirectUrl.substring(0, redirectUrl.length() - 1) + "bula");
+			if (!driver.getPageSource().contains("Error 404")) {
+				element = driver.findElement(By.className("leaflet-content"));
+				String funcionamento = element.findElement(By.id("para-que-serve")).getText().replace("Para que serve o ", "");
+				funcionamento = "Como o " + funcionamento + " funciona?";
+				String indicacoes = element.findElement(By.tagName("div")).getText();
+				if (indicacoes.contains(funcionamento))
+					p.indicacoes = indicacoes.substring(0, indicacoes.indexOf(funcionamento)); // Para que Serve?
+				else
+					p.indicacoes = indicacoes;
 
-			element = driver.findElement(By.className("leaflet-content"));
-			String funcionamento = element.findElement(By.id("para-que-serve")).getText().replace("Para que serve o ", "");
-			funcionamento = "Como o " + funcionamento + " funciona?";
-			String indicacoes = element.findElement(By.tagName("div")).getText();
-			if (indicacoes.contains(funcionamento))
-				p.indicacoes = indicacoes.substring(0, indicacoes.indexOf(funcionamento)); // Para que Serve?
-			else
-				p.indicacoes = indicacoes;
+				funcionamento = indicacoes.substring(indicacoes.indexOf(funcionamento) + funcionamento.length());
+				p.funcionamento = (indicacoes.equals(funcionamento) ? "" : funcionamento); // Como Funciona?
 
-			funcionamento = indicacoes.substring(indicacoes.indexOf(funcionamento) + funcionamento.length());
-			p.funcionamento = (indicacoes.equals(funcionamento) ? "" : funcionamento); // Como Funciona?
-
-			elements = driver.findElements(By.className("highlight-action"));
-			if (!elements.isEmpty()) {
-				element = elements.get(0);
-				String bulaUrl = element.getAttribute("href");
-				bulaUrl = bulaUrl.replace("https://docs.google.com/gview?url=", "");
-				bulaUrl = bulaUrl.substring(0, bulaUrl.indexOf("?"));
-				p.bula = bulaUrl;
+				elements = driver.findElements(By.className("highlight-action"));
+				if (!elements.isEmpty()) {
+					element = elements.get(0);
+					String bulaUrl = element.getAttribute("href");
+					bulaUrl = bulaUrl.replace("https://docs.google.com/gview?url=", "");
+					bulaUrl = bulaUrl.substring(0, bulaUrl.indexOf("?"));
+					p.bula = bulaUrl;
+				}
 			}
 
 			return p;
@@ -160,6 +175,20 @@ public class Main {
 			driver.close();
 			driver.quit();
 		}
+	}
+
+	private static String getByteArrayFromImageURL(String urlStr) throws Exception {
+		URL url = new URL(urlStr);
+		HttpURLConnection connection = (HttpURLConnection) url
+				.openConnection();
+		connection.setRequestProperty(
+				"User-Agent",
+				"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.65 Safari/537.31");
+		BufferedImage image = ImageIO.read(connection.getInputStream());
+
+		final ByteArrayOutputStream os = new ByteArrayOutputStream();
+		ImageIO.write(image, "png", os);
+		return Base64.getEncoder().encodeToString(os.toByteArray());
 	}
 
 	private static class Product {
