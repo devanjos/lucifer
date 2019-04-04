@@ -14,8 +14,8 @@ import java.util.List;
 
 public class UpdatePrice {
 
-	private static final String INPUT = "files/input.txt";
-	private static final String OUTPUT = "files/output.sql";
+	private static final String INPUT = "files/input_price.txt";
+	private static final String OUTPUT = "files/output_price.sql";
 
 	private static final String HOST = "localhost";
 	private static final String PORT = "3306";

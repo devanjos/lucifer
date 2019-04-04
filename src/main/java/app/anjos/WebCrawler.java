@@ -1,4 +1,4 @@
-package app.anjos.webcrawler;
+package app.anjos;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -15,9 +15,9 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
-public class Main {
+public class WebCrawler {
 
-	private static final String INPUT = "files/input.txt";
+	private static final String INPUT = "files/input_crawler.txt";
 	private static final String SEARCH_URL = "https://consultaremedios.com.br/busca?termo=";
 
 	private static ChromeOptions OPTIONS;
