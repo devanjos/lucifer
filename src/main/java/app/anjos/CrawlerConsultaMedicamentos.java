@@ -4,16 +4,20 @@ import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.LinkedList;
 import java.util.List;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import app.anjos.model.Product;
 
 public class CrawlerConsultaMedicamentos implements Runnable {
 
 	private static final String URL = "https://consultaremedios.com.br";
-	private static final String START_POINT = "https://consultaremedios.com.br/medicamentos/";
-	//?pagina=1
-	private static final String[] SUB_POINTS = new String[] { "0-9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
-	//private static final String[] SUB_POINTS = new String[] { "0-9" };
+	private static final String MED_URL = "https://consultaremedios.com.br/medicamentos";
+	private static final String[] SECTIONS = new String[] { "0-9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
+			"Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
+	//private static final String[] SECTIONS = new String[] { "0-9" };
 
 	private static List<Product> products = new LinkedList<>();
 
@@ -21,8 +25,8 @@ public class CrawlerConsultaMedicamentos implements Runnable {
 		System.setProperty("webdriver.chrome.driver", "chromedriver_73.exe");
 		List<Thread> jobs = new LinkedList<>();
 		Thread j;
-		for (String s : SUB_POINTS) {
-			j = new Thread(new CrawlerConsultaMedicamentos(START_POINT + s));
+		for (String s : SECTIONS) {
+			j = new Thread(new CrawlerConsultaMedicamentos(s));
 			jobs.add(j);
 			j.start();
 		}
@@ -44,14 +48,16 @@ public class CrawlerConsultaMedicamentos implements Runnable {
 
 	// ##################################################################
 
-	private String startPoint;
+	private String subPoint;
+	private String url;
 	private ChromeOptions options;
 
 	private List<String> toCrawler;
 	private boolean listFinish;
 
-	private CrawlerConsultaMedicamentos(String startPoint) {
-		this.startPoint = startPoint;
+	private CrawlerConsultaMedicamentos(String section) {
+		this.subPoint = section;
+		this.url = MED_URL + "/" + section;
 		options = new ChromeOptions();
 		options.addArguments("--headless");
 
@@ -61,28 +67,62 @@ public class CrawlerConsultaMedicamentos implements Runnable {
 
 	@Override
 	public void run() {
+		Thread.currentThread().setName("Create Prod (" + subPoint + ")");
 		createListThread().start();
 
-		while (!listFinish || !toCrawler.isEmpty()) {
-			while (toCrawler.isEmpty()) {
+		WebDriver driver = new ChromeDriver(options);
+		try {
+			while (!listFinish || !toCrawler.isEmpty()) {
+				while (toCrawler.isEmpty()) {
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+					}
+				}
 				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+					driver.get(toCrawler.remove(toCrawler.size() - 1));
+					addProduct(crawlerProduct(driver));
+				} catch (Exception ex) {
+					System.err.println(driver.getCurrentUrl());
+					ex.printStackTrace();
 				}
 			}
-
-			System.out.println(toCrawler.remove(toCrawler.size() - 1)); //TODO
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		} finally {
+			driver.close();
+			driver.quit();
 		}
+	}
+
+	private Product crawlerProduct(WebDriver driver) {
+		log(driver.getCurrentUrl());
+		return new Product();
 	}
 
 	private Thread createListThread() {
 		return new Thread(() -> {
-			for (int x = 0; x < 10; x++) {
-				toCrawler.add(0, "teste" + x); //TODO
+			Thread.currentThread().setName("Create List (" + subPoint + ")");
+			WebDriver driver = new ChromeDriver(options);
+			int pag = 0;
+
+			pag++;
+			log("GET ?pagina=" + pag);
+			driver.get(url + "?pagina=" + pag);
+			while (driver.getPageSource().contains("content-grid__item")) {
+				for (WebElement e : driver.findElements(By.className("content-grid__item")))
+					toCrawler.add(0, e.findElement(By.tagName("a")).getAttribute("href"));
+				pag++;
+				log("GET ?pagina=" + pag);
+				driver.get(url + "?pagina=" + pag);
 			}
 
+			log("END");
 			listFinish = true;
 		});
+	}
+
+	private static synchronized void log(String msg) {
+		System.out.println("-> " + Thread.currentThread().getName() + ": " + msg);
 	}
 }
