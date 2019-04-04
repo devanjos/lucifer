@@ -22,7 +22,7 @@ public class WebCrawler {
 
 	private static ChromeOptions OPTIONS;
 
-	private static final boolean SINGLE_THREAD = true;
+	private static final boolean SINGLE_THREAD = false;
 	private static int LOCK = 0;
 
 	public static void main(String[] args) throws Exception {
@@ -36,7 +36,7 @@ public class WebCrawler {
 				line = reader.readLine().split(";");
 
 				LOCK++;
-				while (!SINGLE_THREAD && LOCK > 5) {
+				while (!SINGLE_THREAD && LOCK > 100) {
 					Thread.sleep(100);
 				}
 
