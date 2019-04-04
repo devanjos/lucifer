@@ -109,7 +109,7 @@ public class Main {
 					p.apresentacao = element.findElement(By.tagName("a")).getAttribute("title").replace(productName, "").trim(); // Nome da Apresentação
 
 					element = e.findElement(By.className("presentation-offer-info__img"));
-					p.img = getByteArrayFromImageURL(element.getAttribute("src")); // URL da imagem
+					p.img = getByteArrayFromImageURL(element.getAttribute("data-src")); // URL da imagem
 				}
 			}
 
@@ -177,18 +177,22 @@ public class Main {
 		}
 	}
 
-	private static String getByteArrayFromImageURL(String urlStr) throws Exception {
-		URL url = new URL(urlStr);
-		HttpURLConnection connection = (HttpURLConnection) url
-				.openConnection();
-		connection.setRequestProperty(
-				"User-Agent",
-				"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.65 Safari/537.31");
-		BufferedImage image = ImageIO.read(connection.getInputStream());
+	private static String getByteArrayFromImageURL(String urlStr) {
+		try {
+			URL url = new URL(urlStr);
+			HttpURLConnection connection = (HttpURLConnection) url
+					.openConnection();
+			connection.setRequestProperty(
+					"User-Agent",
+					"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.65 Safari/537.31");
+			BufferedImage image = ImageIO.read(connection.getInputStream());
 
-		final ByteArrayOutputStream os = new ByteArrayOutputStream();
-		ImageIO.write(image, "png", os);
-		return Base64.getEncoder().encodeToString(os.toByteArray());
+			final ByteArrayOutputStream os = new ByteArrayOutputStream();
+			ImageIO.write(image, "png", os);
+			return Base64.getEncoder().encodeToString(os.toByteArray());
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	private static class Product {
