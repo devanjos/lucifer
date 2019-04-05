@@ -1,10 +1,19 @@
 package app.anjos.model;
 
 import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import io.matob.database.Model;
 
@@ -16,12 +25,25 @@ public class Product implements Model<Integer> {
 	private static final long serialVersionUID = -6071652540687665820L;
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
+
+	@Column(length = 50)
 	private String name;
-	private Category category;
+
+	@ManyToOne(cascade = CascadeType.REFRESH)
+	@JoinColumn(name = "supplier_id")
 	private Supplier supplier;
+
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "image_id")
 	private Image image;
-	private List<Presentation> presentations;
+
+	@ManyToMany(cascade = CascadeType.REFRESH)
+	@JoinTable(name = "product_category", //
+			joinColumns = { @JoinColumn(name = "product_id") }, //
+			inverseJoinColumns = { @JoinColumn(name = "category_id") })
+	private List<Category> categories;
 
 	@Override
 	public Integer getId() {
@@ -35,18 +57,6 @@ public class Product implements Model<Integer> {
 
 	public String getName() {
 		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public Category getCategory() {
-		return category;
-	}
-
-	public void setCategory(Category category) {
-		this.category = category;
 	}
 
 	public Supplier getSupplier() {
@@ -65,12 +75,16 @@ public class Product implements Model<Integer> {
 		this.image = image;
 	}
 
-	public List<Presentation> getPresentations() {
-		return presentations;
+	public List<Category> getCategories() {
+		return categories;
 	}
 
-	public void setPresentations(List<Presentation> presentations) {
-		this.presentations = presentations;
+	public void setCategories(List<Category> categories) {
+		this.categories = categories;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@Override

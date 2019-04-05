@@ -1,7 +1,14 @@
 package app.anjos.model;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import io.matob.database.Model;
 
@@ -12,17 +19,42 @@ public class Presentation implements Model<Integer> {
 	private static final long serialVersionUID = -5527256281141892273L;
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
+
+	@Column(length = 30)
 	private String code;
+
+	@Column(length = 30)
 	private String ms;
+
+	@Column(length = 100)
 	private String name;
-	private String fabricante;
+
+	@Column(name = "manual_price")
+	private Boolean manualPrice;
+
+	@Column(name = "price_supplier", precision = 10, scale = 3)
 	private Double priceSupplier;
+
+	@Column(name = "price_max", precision = 10, scale = 3)
 	private Double priceMax;
+
+	@Column(name = "price_anjos", precision = 10, scale = 3)
 	private Double priceAnjos;
+
+	@Column(name = "price_pharmacy", precision = 10, scale = 3)
+	private Double pricePharmacy;
+
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "image_id")
 	private Image image;
 
+	@ManyToOne(cascade = CascadeType.REFRESH)
+	@JoinColumn(name = "product_id")
 	private Product product;
+
+	private Boolean disabled;
 
 	@Override
 	public Integer getId() {
@@ -58,14 +90,6 @@ public class Presentation implements Model<Integer> {
 		this.name = name;
 	}
 
-	public String getFabricante() {
-		return fabricante;
-	}
-
-	public void setFabricante(String fabricante) {
-		this.fabricante = fabricante;
-	}
-
 	public Double getPriceSupplier() {
 		return priceSupplier;
 	}
@@ -82,12 +106,28 @@ public class Presentation implements Model<Integer> {
 		this.priceMax = priceMax;
 	}
 
+	public Boolean getManualPrice() {
+		return manualPrice;
+	}
+
+	public void setManualPrice(Boolean manualPrice) {
+		this.manualPrice = manualPrice;
+	}
+
 	public Double getPriceAnjos() {
 		return priceAnjos;
 	}
 
 	public void setPriceAnjos(Double priceAnjos) {
 		this.priceAnjos = priceAnjos;
+	}
+
+	public Double getPricePharmacy() {
+		return pricePharmacy;
+	}
+
+	public void setPricePharmacy(Double pricePharmacy) {
+		this.pricePharmacy = pricePharmacy;
 	}
 
 	public Image getImage() {
@@ -104,6 +144,14 @@ public class Presentation implements Model<Integer> {
 
 	public void setProduct(Product product) {
 		this.product = product;
+	}
+
+	public Boolean getDisabled() {
+		return disabled;
+	}
+
+	public void setDisabled(Boolean disabled) {
+		this.disabled = disabled;
 	}
 
 	@Override
