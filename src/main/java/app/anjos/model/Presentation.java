@@ -54,7 +54,7 @@ public class Presentation implements Model<Integer> {
 	@JoinColumn(name = "product_id")
 	private Product product;
 
-	private Boolean disabled;
+	private Boolean enabled;
 
 	@Override
 	public Integer getId() {
@@ -146,12 +146,12 @@ public class Presentation implements Model<Integer> {
 		this.product = product;
 	}
 
-	public Boolean getDisabled() {
-		return disabled;
+	public Boolean getEnabled() {
+		return enabled;
 	}
 
-	public void setDisabled(Boolean disabled) {
-		this.disabled = disabled;
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
 	}
 
 	@Override

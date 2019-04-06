@@ -22,7 +22,7 @@ public class CrawlerConsultaMedicamentos implements Runnable {
 	private static List<Product> products = new LinkedList<>();
 
 	public static void main(String[] args) throws Exception {
-		System.setProperty("webdriver.chrome.driver", "chromedriver_73.exe");
+		System.setProperty("webdriver.chrome.driver", "files/chromedriver_73.exe");
 		List<Thread> jobs = new LinkedList<>();
 		Thread j;
 		for (String s : SECTIONS) {
@@ -56,8 +56,8 @@ public class CrawlerConsultaMedicamentos implements Runnable {
 	private boolean listFinish;
 
 	private CrawlerConsultaMedicamentos(String section) {
-		this.subPoint = section;
-		this.url = MED_URL + "/" + section;
+		subPoint = section;
+		url = MED_URL + "/" + section;
 		options = new ChromeOptions();
 		options.addArguments("--headless");
 

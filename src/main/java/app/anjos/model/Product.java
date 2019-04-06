@@ -3,6 +3,9 @@ package app.anjos.model;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -20,6 +23,8 @@ import io.matob.database.Model;
 @Entity
 @Table(name = "product")
 @Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "type", length = 1, discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorValue("P")
 public class Product implements Model<Integer> {
 
 	private static final long serialVersionUID = -6071652540687665820L;
@@ -38,6 +43,11 @@ public class Product implements Model<Integer> {
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "image_id")
 	private Image image;
+
+	private boolean featured;
+
+	@Column(name = "featured_priority")
+	private Integer featuredPriority;
 
 	@ManyToMany(cascade = CascadeType.REFRESH)
 	@JoinTable(name = "product_category", //
@@ -73,6 +83,22 @@ public class Product implements Model<Integer> {
 
 	public void setImage(Image image) {
 		this.image = image;
+	}
+
+	public boolean isFeatured() {
+		return featured;
+	}
+
+	public void setFeatured(boolean featured) {
+		this.featured = featured;
+	}
+
+	public Integer getFeaturedPriority() {
+		return featuredPriority;
+	}
+
+	public void setFeaturedPriority(Integer featuredPriority) {
+		this.featuredPriority = featuredPriority;
 	}
 
 	public List<Category> getCategories() {

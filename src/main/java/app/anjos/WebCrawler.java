@@ -26,7 +26,7 @@ public class WebCrawler {
 	private static int LOCK = 0;
 
 	public static void main(String[] args) throws Exception {
-		System.setProperty("webdriver.chrome.driver", "chromedriver_73.exe");
+		System.setProperty("webdriver.chrome.driver", "files/chromedriver_73.exe");
 		OPTIONS = new ChromeOptions();
 		OPTIONS.addArguments("--headless");
 
