@@ -1,56 +1,77 @@
 package app.anjos;
 
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.PrintStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.List;
+import app.anjos.model.Drug;
+import app.anjos.model.Presentation;
+import io.matob.database.jpa.DAOJPA;
+import io.matob.database.jpa.DAOJPAFactory;
+import io.matob.database.jpa.EntityManagerController;
+import io.matob.database.jpa.JPQLBuilder;
+import io.matob.database.util.sql.clause.Clause;
+import io.matob.tools.MathUtils;
 
 public class UpdatePrice {
 
-	private static final String INPUT = "files/input_price.txt";
-	private static final String OUTPUT = "files/output_price.sql";
-
-	private static final String HOST = "localhost";
-	private static final String PORT = "3306";
-	private static final String DATABASE = "anjos";
-	private static final String USER = "root";
-	private static final String PASSWORD = "admin";
+	private static final String INPUT = "files/update_price.txt";
 
 	public static void main(String[] args) throws Exception {
-		List<String> updates = new LinkedList<>();
-
-		try (BufferedReader reader = new BufferedReader(new FileReader(INPUT));
-				Connection conn = getConnection();
-				PrintStream out = new PrintStream(new FileOutputStream(OUTPUT))) {
+		EntityManagerController emc = new EntityManagerController();
+		try (BufferedReader reader = new BufferedReader(new FileReader(INPUT))) {
+			DAOJPA<Presentation> dao = DAOJPAFactory.createDAO(Presentation.class, emc);
+			dao.setUseTransaction(false);
+			emc.begin();
 
 			String line[];
-			PreparedStatement stmt;
-
+			String code;
+			String ms;
+			double priceSupplier;
+			double princeMax;
+			Presentation p;
+			Drug drug;
 			while (reader.ready()) {
 				line = reader.readLine().split(";");
+				code = line[0];
+				ms = (line[1].isEmpty()) ? null : line[1];
+				priceSupplier = Double.parseDouble(line[2]);
+				priceSupplier = (priceSupplier > 0) ? priceSupplier : null;
+				princeMax = Double.parseDouble(line[3]);
 
-				stmt = conn.prepareStatement("SELECT p.id FROM presentations p WHERE p.barcode = '" + line[0] + "';");
-				ResultSet rs = stmt.executeQuery();
-				if (rs.next())
-					updates.add("UPDATE presentations p SET p.pf = " + line[1] + ", p.pc = " + line[2] + " WHERE p.barcode = '" + line[0] + "';");
+				JPQLBuilder jpql = new JPQLBuilder()
+						.where(new Clause("m.code = :code"))
+						.addParameter("code", code)
+						.addParameter("ms", ms);
+				if (line[1] != null)
+					jpql.where(new Clause("m.ms = :ms"));
+
+				p = dao.executeSingleQuery(jpql);
+
+				if (p == null) {
+					System.out.println("Produto não encontrado, EAN: " + code + "; MS: " + ms);
+					continue;
+				}
+
+				if (p.getManualPrice() || !(p.getProduct() instanceof Drug))
+					continue;
+
+				drug = (Drug) p.getProduct();
+				p.setPriceSupplier(priceSupplier);
+				p.setPriceMax(princeMax);
+				if (drug.getType() == 'R') {
+					p.setPricePharmacy(MathUtils.round(((priceSupplier * 0.97) * 1.20), 2));
+					p.setPriceAnjos(MathUtils.round((p.getPricePharmacy() * 1.12), 2));
+				} else if (drug.getType() == 'G' || drug.getType() == 'S') {
+					p.setPricePharmacy(MathUtils.round(((priceSupplier * 0.30) * 1.45), 2));
+					p.setPriceAnjos(MathUtils.round((p.getPricePharmacy() * 1.20), 2));
+				}
+
+				dao.save(p);
 			}
 
-			updates.forEach((c) -> out.println(c));
-		}
-	}
-
-	private static Connection getConnection() {
-		try {
-			return DriverManager.getConnection("jdbc:mysql://" + HOST + ":" + PORT + "/" + DATABASE + "?useTimezone=true&serverTimezone=UTC", USER, PASSWORD);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
+			emc.commit();
+		} catch (Exception ex) {
+			emc.rollback();
+			throw ex;
 		}
 	}
 }

@@ -21,6 +21,12 @@ public class Speciality implements Model<Integer> {
 	@Column(length = 50)
 	private String name;
 
+	public Speciality() {}
+
+	public Speciality(String name) {
+		this.name = name;
+	}
+
 	@Override
 	public Integer getId() {
 		return id;

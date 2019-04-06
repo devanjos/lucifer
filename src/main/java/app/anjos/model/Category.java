@@ -38,6 +38,13 @@ public class Category implements Model<Integer> {
 			inverseJoinColumns = { @JoinColumn(name = "children_id") })
 	private List<Category> categories;
 
+	public Category() {}
+
+	public Category(String name) {
+		super();
+		this.name = name;
+	}
+
 	@Override
 	public Integer getId() {
 		return id;

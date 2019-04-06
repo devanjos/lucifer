@@ -24,6 +24,13 @@ public class Image implements Model<Integer> {
 	@Column(columnDefinition = "TEXT")
 	private String data;
 
+	public Image() {}
+
+	public Image(String format, String data) {
+		this.format = format;
+		this.data = data;
+	}
+
 	@Override
 	public Integer getId() {
 		return id;

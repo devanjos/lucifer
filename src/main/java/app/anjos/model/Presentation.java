@@ -28,11 +28,11 @@ public class Presentation implements Model<Integer> {
 	@Column(length = 30)
 	private String ms;
 
-	@Column(length = 100)
+	@Column(length = 255)
 	private String name;
 
 	@Column(name = "manual_price")
-	private Boolean manualPrice;
+	private Boolean manualPrice = false;
 
 	@Column(name = "price_supplier", precision = 10, scale = 3)
 	private Double priceSupplier;
@@ -54,7 +54,9 @@ public class Presentation implements Model<Integer> {
 	@JoinColumn(name = "product_id")
 	private Product product;
 
-	private Boolean enabled;
+	private Boolean enabled = true;
+
+	public Presentation() {}
 
 	@Override
 	public Integer getId() {

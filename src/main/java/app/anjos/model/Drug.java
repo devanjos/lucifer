@@ -1,5 +1,6 @@
 package app.anjos.model;
 
+import java.util.LinkedList;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -19,7 +20,7 @@ public class Drug extends Product {
 
 	private Character type; // R - Referência, G - Genérico, S - Similar
 
-	private Boolean prescription;
+	private Boolean prescription = false;
 
 	@Column(columnDefinition = "TEXT")
 	private String indications;
@@ -33,13 +34,15 @@ public class Drug extends Product {
 	@JoinTable(name = "drug_speciality", //
 			joinColumns = { @JoinColumn(name = "drug_id") }, //
 			inverseJoinColumns = { @JoinColumn(name = "speciality_id") })
-	private List<Speciality> specialities;
+	private List<Speciality> specialities = new LinkedList<>();
 
 	@ManyToMany(cascade = CascadeType.REFRESH)
 	@JoinTable(name = "drug_substance", //
 			joinColumns = { @JoinColumn(name = "drug_id") }, //
 			inverseJoinColumns = { @JoinColumn(name = "substance_id") })
-	private List<Substance> substances;
+	private List<Substance> substances = new LinkedList<>();
+
+	public Drug() {}
 
 	public Character getType() {
 		return type;

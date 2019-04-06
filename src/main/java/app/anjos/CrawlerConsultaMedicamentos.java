@@ -1,7 +1,5 @@
 package app.anjos;
 
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import org.openqa.selenium.By;
@@ -9,17 +7,16 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import app.anjos.model.Product;
+import app.anjos.model.Presentation;
 
 public class CrawlerConsultaMedicamentos implements Runnable {
 
-	private static final String URL = "https://consultaremedios.com.br";
 	private static final String MED_URL = "https://consultaremedios.com.br/medicamentos";
-	private static final String[] SECTIONS = new String[] { "0-9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
-			"Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
-	//private static final String[] SECTIONS = new String[] { "0-9" };
+	//private static final String[] SECTIONS = new String[] { "0-9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
+	//"Q","R","S","T","U","V","W","X","Y","Z"};
+	private static final String[] SECTIONS = new String[] { "0-9" };
 
-	private static List<Product> products = new LinkedList<>();
+	private static List<Presentation> presentations = new LinkedList<>();
 
 	public static void main(String[] args) throws Exception {
 		System.setProperty("webdriver.chrome.driver", "files/chromedriver_73.exe");
@@ -35,14 +32,12 @@ public class CrawlerConsultaMedicamentos implements Runnable {
 			job.join();
 		}
 
-		try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("result.obj"))) {
-			out.writeObject(products);
-		}
+		new PresentationPersister(presentations).execute();
 	}
 
-	private static synchronized void addProduct(Product product) {
-		synchronized (products) {
-			products.add(product);
+	private static synchronized void addPresentations(List<Presentation> p) {
+		synchronized (presentations) {
+			presentations.addAll(p);
 		}
 	}
 
@@ -71,17 +66,19 @@ public class CrawlerConsultaMedicamentos implements Runnable {
 		createListThread().start();
 
 		WebDriver driver = new ChromeDriver(options);
+		String url;
 		try {
 			while (!listFinish || !toCrawler.isEmpty()) {
 				while (toCrawler.isEmpty()) {
 					try {
 						Thread.sleep(100);
-					} catch (InterruptedException e) {
-					}
+					} catch (InterruptedException e) {}
 				}
 				try {
-					driver.get(toCrawler.remove(toCrawler.size() - 1));
-					addProduct(crawlerProduct(driver));
+					url = toCrawler.remove(toCrawler.size() - 1);
+					log("GET " + url);
+					driver.get(url);
+					addPresentations(new CrawlerProduct(driver).execute());
 				} catch (Exception ex) {
 					System.err.println(driver.getCurrentUrl());
 					ex.printStackTrace();
@@ -93,11 +90,6 @@ public class CrawlerConsultaMedicamentos implements Runnable {
 			driver.close();
 			driver.quit();
 		}
-	}
-
-	private Product crawlerProduct(WebDriver driver) {
-		log(driver.getCurrentUrl());
-		return new Product();
 	}
 
 	private Thread createListThread() {

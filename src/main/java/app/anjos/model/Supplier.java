@@ -21,6 +21,12 @@ public class Supplier implements Model<Integer> {
 	@Column(length = 50)
 	private String name;
 
+	public Supplier() {}
+
+	public Supplier(String name) {
+		this.name = name;
+	}
+
 	@Override
 	public Integer getId() {
 		return id;

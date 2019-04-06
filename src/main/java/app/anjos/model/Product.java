@@ -1,5 +1,6 @@
 package app.anjos.model;
 
+import java.util.LinkedList;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -23,7 +24,7 @@ import io.matob.database.Model;
 @Entity
 @Table(name = "product")
 @Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "type", length = 1, discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorColumn(name = "product_type", length = 1, discriminatorType = DiscriminatorType.STRING)
 @DiscriminatorValue("P")
 public class Product implements Model<Integer> {
 
@@ -44,7 +45,7 @@ public class Product implements Model<Integer> {
 	@JoinColumn(name = "image_id")
 	private Image image;
 
-	private boolean featured;
+	private boolean featured = false;
 
 	@Column(name = "featured_priority")
 	private Integer featuredPriority;
@@ -53,7 +54,9 @@ public class Product implements Model<Integer> {
 	@JoinTable(name = "product_category", //
 			joinColumns = { @JoinColumn(name = "product_id") }, //
 			inverseJoinColumns = { @JoinColumn(name = "category_id") })
-	private List<Category> categories;
+	private List<Category> categories = new LinkedList<>();
+
+	public Product() {}
 
 	@Override
 	public Integer getId() {
