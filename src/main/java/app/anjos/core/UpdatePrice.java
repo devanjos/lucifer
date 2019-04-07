@@ -1,4 +1,4 @@
-package app.anjos;
+package app.anjos.core;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -13,11 +13,17 @@ import io.matob.tools.MathUtils;
 
 public class UpdatePrice {
 
-	private static final String INPUT = "files/1. precos.txt";
+	private static final String INPUT_1 = "files/1. precos.txt";
+	private static final String INPUT_2 = "files/2. precos_manuais.txt";
 
 	public static void main(String[] args) throws Exception {
+		aplicarFormulaPreco();
+		verificarPrecoManual();
+	}
+
+	private static void aplicarFormulaPreco() throws Exception {
 		EntityManagerController emc = new EntityManagerController();
-		try (BufferedReader reader = new BufferedReader(new FileReader(INPUT))) {
+		try (BufferedReader reader = new BufferedReader(new FileReader(INPUT_1))) {
 			DAOJPA<Presentation> dao = DAOJPAFactory.createDAO(Presentation.class, emc);
 			dao.setUseTransaction(false);
 			emc.begin();
@@ -51,7 +57,7 @@ public class UpdatePrice {
 					continue;
 				}
 
-				if (p.getManualPrice() || !(p.getProduct() instanceof Drug))
+				if (!(p.getProduct() instanceof Drug) || (p.getManualPrice() && p.getPriceAnjos() != null && p.getPriceAnjos() > 0))
 					continue;
 
 				drug = (Drug) p.getProduct();
@@ -65,6 +71,43 @@ public class UpdatePrice {
 					p.setPriceAnjos(MathUtils.round((p.getPricePharmacy() * 1.12), 2));
 				}
 
+				dao.save(p);
+			}
+
+			emc.commit();
+		} catch (Exception ex) {
+			emc.rollback();
+			throw ex;
+		} finally {
+			emc.close();
+		}
+	}
+
+	private static void verificarPrecoManual() throws Exception {
+		EntityManagerController emc = new EntityManagerController();
+		try (BufferedReader reader = new BufferedReader(new FileReader(INPUT_2))) {
+			DAOJPA<Presentation> dao = DAOJPAFactory.createDAO(Presentation.class, emc);
+			dao.setUseTransaction(false);
+			emc.begin();
+
+			String line;
+			Presentation p;
+			while (reader.ready()) {
+				line = reader.readLine().trim();
+				if (line.isEmpty())
+					continue;
+
+				JPQLBuilder jpql = new JPQLBuilder()
+						.where(new Clause("m.code = :code"))
+						.addParameter("code", line);
+				p = dao.executeSingleQuery(jpql);
+
+				if (p == null) {
+					System.out.println("Produto não encontrado, EAN: " + line);
+					continue;
+				}
+
+				p.setManualPrice(true);
 				dao.save(p);
 			}
 

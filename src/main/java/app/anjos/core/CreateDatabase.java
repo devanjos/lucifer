@@ -1,4 +1,4 @@
-package app.anjos;
+package app.anjos.core;
 
 import io.matob.database.jpa.EntityManagerController;
 

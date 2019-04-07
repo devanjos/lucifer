@@ -1,4 +1,4 @@
-package app.anjos;
+package app.anjos.core.crawler;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;

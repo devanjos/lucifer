@@ -1,4 +1,4 @@
-package app.anjos;
+package app.anjos.core.crawler;
 
 import java.util.HashMap;
 import java.util.LinkedList;

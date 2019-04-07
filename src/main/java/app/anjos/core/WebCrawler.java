@@ -1,5 +1,6 @@
-package app.anjos;
+package app.anjos.core;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import org.openqa.selenium.By;
@@ -7,35 +8,49 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import app.anjos.core.crawler.CrawlerProduct;
+import app.anjos.core.crawler.PresentationPersister;
 import app.anjos.model.Presentation;
+import io.matob.tools.FileUtils;
 
-public class CrawlerConsultaMedicamentos implements Runnable {
+public class WebCrawler implements Runnable {
 
+	private static final String FILE = "presentations.obj";
 	private static final String[] SECTIONS = new String[] { "0-9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
 			"Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
 	//private static final String[] SECTIONS = new String[] { "0-9" };
 	//private static final String[] SECTIONS = new String[] { "T" };
 
+	private static final boolean useFile = true;
 	private static List<Presentation> presentations = new LinkedList<>();
 
 	public static void main(String[] args) throws Exception {
-		System.setProperty("webdriver.chrome.driver", "chromedriver_73.exe");
+		if (!useFile || !new File(FILE).exists()) {
+			System.setProperty("webdriver.chrome.driver", "chromedriver_73.exe");
 
-		CrawlerCategory.main(args);
+			List<Thread> jobs = new LinkedList<>();
+			Thread j;
+			for (String s : SECTIONS) {
+				j = new Thread(new WebCrawler(s));
+				jobs.add(j);
+				j.start();
+			}
 
-		List<Thread> jobs = new LinkedList<>();
-		Thread j;
-		for (String s : SECTIONS) {
-			j = new Thread(new CrawlerConsultaMedicamentos(s));
-			jobs.add(j);
-			j.start();
+			for (Thread job : jobs) {
+				job.join();
+			}
+
+			saveToFile();
 		}
+		new PresentationPersister(loadFromFile()).execute();
+	}
 
-		for (Thread job : jobs) {
-			job.join();
-		}
+	private static void saveToFile() throws Exception {
+		FileUtils.saveObject(null, FILE, presentations);
+	}
 
-		new PresentationPersister(presentations).execute();
+	private static List<Presentation> loadFromFile() throws Exception {
+		return FileUtils.loadObject(FILE);
 	}
 
 	private static synchronized void addPresentations(List<Presentation> p) {
@@ -53,7 +68,7 @@ public class CrawlerConsultaMedicamentos implements Runnable {
 	private List<String> toCrawler;
 	private boolean listFinish;
 
-	private CrawlerConsultaMedicamentos(String section) {
+	private WebCrawler(String section) {
 		subPoint = section;
 		url = "https://consultaremedios.com.br/medicamentos/" + section;
 		options = new ChromeOptions();
