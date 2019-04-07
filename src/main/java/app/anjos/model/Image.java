@@ -21,7 +21,7 @@ public class Image implements Model<Integer> {
 	@Column(length = 5)
 	private String format; // svg, png, jpg
 
-	@Column(columnDefinition = "TEXT")
+	@Column(columnDefinition = "MEDIUMTEXT")
 	private String data;
 
 	public Image() {}

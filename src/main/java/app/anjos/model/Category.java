@@ -1,5 +1,6 @@
 package app.anjos.model;
 
+import java.util.LinkedList;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -28,15 +29,17 @@ public class Category implements Model<Integer> {
 	@Column(length = 50)
 	private String name;
 
+	private boolean featured = false;
+
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "image_id")
 	private Image image;
 
 	@ManyToMany(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
-	@JoinTable(name = "category_category", //
+	@JoinTable(name = "category_subcategory", //
 			joinColumns = { @JoinColumn(name = "category_id") }, //
-			inverseJoinColumns = { @JoinColumn(name = "children_id") })
-	private List<Category> categories;
+			inverseJoinColumns = { @JoinColumn(name = "subcategory_id") })
+	private List<Category> subcategories = new LinkedList<>();
 
 	public Category() {}
 
@@ -63,6 +66,14 @@ public class Category implements Model<Integer> {
 		this.name = name;
 	}
 
+	public boolean isFeatured() {
+		return featured;
+	}
+
+	public void setFeatured(boolean featured) {
+		this.featured = featured;
+	}
+
 	public Image getImage() {
 		return image;
 	}
@@ -71,12 +82,12 @@ public class Category implements Model<Integer> {
 		this.image = image;
 	}
 
-	public List<Category> getCategories() {
-		return categories;
+	public List<Category> getSubcategories() {
+		return subcategories;
 	}
 
-	public void setCategories(List<Category> categories) {
-		this.categories = categories;
+	public void setSubcategories(List<Category> subcategories) {
+		this.subcategories = subcategories;
 	}
 
 	@Override

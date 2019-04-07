@@ -11,15 +11,18 @@ import app.anjos.model.Presentation;
 
 public class CrawlerConsultaMedicamentos implements Runnable {
 
-	private static final String MED_URL = "https://consultaremedios.com.br/medicamentos";
-	//private static final String[] SECTIONS = new String[] { "0-9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
-	//"Q","R","S","T","U","V","W","X","Y","Z"};
-	private static final String[] SECTIONS = new String[] { "0-9" };
+	private static final String[] SECTIONS = new String[] { "0-9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
+			"Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
+	//private static final String[] SECTIONS = new String[] { "0-9" };
+	//private static final String[] SECTIONS = new String[] { "T" };
 
 	private static List<Presentation> presentations = new LinkedList<>();
 
 	public static void main(String[] args) throws Exception {
-		System.setProperty("webdriver.chrome.driver", "files/chromedriver_73.exe");
+		System.setProperty("webdriver.chrome.driver", "chromedriver_73.exe");
+
+		CrawlerCategory.main(args);
+
 		List<Thread> jobs = new LinkedList<>();
 		Thread j;
 		for (String s : SECTIONS) {
@@ -52,7 +55,7 @@ public class CrawlerConsultaMedicamentos implements Runnable {
 
 	private CrawlerConsultaMedicamentos(String section) {
 		subPoint = section;
-		url = MED_URL + "/" + section;
+		url = "https://consultaremedios.com.br/medicamentos/" + section;
 		options = new ChromeOptions();
 		options.addArguments("--headless");
 
@@ -101,15 +104,18 @@ public class CrawlerConsultaMedicamentos implements Runnable {
 			pag++;
 			log("GET ?pagina=" + pag);
 			driver.get(url + "?pagina=" + pag);
+			int count = 0;
 			while (driver.getPageSource().contains("content-grid__item")) {
-				for (WebElement e : driver.findElements(By.className("content-grid__item")))
+				for (WebElement e : driver.findElements(By.className("content-grid__item"))) {
 					toCrawler.add(0, e.findElement(By.tagName("a")).getAttribute("href"));
+					count++;
+				}
 				pag++;
 				log("GET ?pagina=" + pag);
 				driver.get(url + "?pagina=" + pag);
 			}
 
-			log("END");
+			log("END: " + count + " products");
 			listFinish = true;
 		});
 	}

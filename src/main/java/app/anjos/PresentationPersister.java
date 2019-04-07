@@ -49,8 +49,10 @@ public class PresentationPersister {
 			dao.setUseTransaction(false);
 
 			emc.begin();
+			Product product;
 			for (Presentation presentation : presentations) {
-				Product product = presentation.getProduct();
+				log("SAVE: " + presentation.getCode() + "\t" + presentation.getProduct().getName() + presentation.getName());
+				product = presentation.getProduct();
 				if (!productCache.containsKey(product.getName()))
 					persistProduct(product);
 				presentation.setProduct(productCache.get(product.getName()));
@@ -67,6 +69,8 @@ public class PresentationPersister {
 		} catch (Exception ex) {
 			emc.rollback();
 			throw ex;
+		} finally {
+			emc.close();
 		}
 	}
 
@@ -154,5 +158,9 @@ public class PresentationPersister {
 		dao.setUseTransaction(false);
 		value = dao.save(value);
 		substanceCache.put(value.getName(), value);
+	}
+
+	private static synchronized void log(String msg) {
+		System.out.println("-> " + Thread.currentThread().getName() + ": " + msg);
 	}
 }

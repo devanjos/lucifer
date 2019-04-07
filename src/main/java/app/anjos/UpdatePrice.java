@@ -13,7 +13,7 @@ import io.matob.tools.MathUtils;
 
 public class UpdatePrice {
 
-	private static final String INPUT = "files/update_price.txt";
+	private static final String INPUT = "files/1. precos.txt";
 
 	public static void main(String[] args) throws Exception {
 		EntityManagerController emc = new EntityManagerController();
@@ -57,12 +57,12 @@ public class UpdatePrice {
 				drug = (Drug) p.getProduct();
 				p.setPriceSupplier(priceSupplier);
 				p.setPriceMax(princeMax);
-				if (drug.getType() == 'R') {
-					p.setPricePharmacy(MathUtils.round(((priceSupplier * 0.97) * 1.20), 2));
-					p.setPriceAnjos(MathUtils.round((p.getPricePharmacy() * 1.12), 2));
-				} else if (drug.getType() == 'G' || drug.getType() == 'S') {
+				if (drug.getType() == 'G' || drug.getType() == 'S' || drug.getType() == 'I') {
 					p.setPricePharmacy(MathUtils.round(((priceSupplier * 0.30) * 1.45), 2));
 					p.setPriceAnjos(MathUtils.round((p.getPricePharmacy() * 1.20), 2));
+				} else {
+					p.setPricePharmacy(MathUtils.round(((priceSupplier * 0.97) * 1.20), 2));
+					p.setPriceAnjos(MathUtils.round((p.getPricePharmacy() * 1.12), 2));
 				}
 
 				dao.save(p);
@@ -72,6 +72,8 @@ public class UpdatePrice {
 		} catch (Exception ex) {
 			emc.rollback();
 			throw ex;
+		} finally {
+			emc.close();
 		}
 	}
 }

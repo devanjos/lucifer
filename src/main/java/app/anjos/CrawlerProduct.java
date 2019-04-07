@@ -64,16 +64,10 @@ public class CrawlerProduct {
 			block = e.findElement(By.tagName("h3")).getText();
 			value = e.findElement(By.tagName("p")).getText();
 
-			if ("Fabricante".equals(block))
+			if ("Fabricante".equals(block) || "Comercializado".equals(block))
 				p.setSupplier(new Supplier(value)); // Fabricante
 			else if ("Tipo do Medicamento".equals(block))
-				p.setType((value.contains("Referência")
-						? 'R'
-						: value.contains("Genérico")
-								? 'G'
-								: value.contains("Similar")
-										? 'S'
-										: 'O')); // Tipo de Medicamento
+				p.setType(getDrugType(value)); // Tipo de Medicamento
 			else if ("Necessita de Receita".equals(block))
 				p.setPrescription(value.toLowerCase().startsWith("sim")); // Necessita de Receita
 			else if ("Princípio Ativo".equals(block)) {
@@ -99,16 +93,15 @@ public class CrawlerProduct {
 			String funcionamento = element.findElement(By.id("para-que-serve")).getText().replace("Para que serve o ", "");
 			funcionamento = "Como o " + funcionamento + " funciona?";
 			String indicacoes = element.findElement(By.tagName("div")).getText();
-			if (indicacoes.contains(funcionamento))
+			if (indicacoes.contains(funcionamento)) {
 				p.setIndications(indicacoes.substring(0, indicacoes.indexOf(funcionamento))); // Para que Serve?
-			else
+				funcionamento = indicacoes.substring(indicacoes.indexOf(funcionamento) + funcionamento.length());
+				p.setHowWorks((indicacoes.equals(funcionamento) ? "" : funcionamento)); // Como Funciona?
+			} else
 				p.setIndications(indicacoes);
 
-			funcionamento = indicacoes.substring(indicacoes.indexOf(funcionamento) + funcionamento.length());
-			p.setHowWorks((indicacoes.equals(funcionamento) ? "" : funcionamento)); // Como Funciona?
-
 			elements = driver.findElements(By.className("highlight-action"));
-			if (!elements.isEmpty()) {
+			if (!elements.isEmpty() && elements.get(0).getText().equals("Bula em PDF")) {
 				element = elements.get(0);
 				String bulaUrl = element.getAttribute("href");
 				bulaUrl = bulaUrl.replace("https://docs.google.com/gview?url=", "");
@@ -120,8 +113,32 @@ public class CrawlerProduct {
 		return presentations;
 	}
 
+	private Character getDrugType(String value) {
+		if (value.contains("Referência"))
+			return 'R';
+		if (value.contains("Genérico"))
+			return 'G';
+		if (value.contains("Intercambiável"))
+			return 'I';
+		if (value.contains("Similar"))
+			return 'S';
+		if (value.contains("Específico"))
+			return 'E';
+		if (value.contains("Biológico"))
+			return 'B';
+		if (value.contains("Novo"))
+			return 'N';
+		if (value.contains("Radio"))
+			return 'D';
+		else
+			return 'O';
+	}
+
 	private static String getByteArrayFromImageURL(String urlStr) {
 		try {
+			if (urlStr.toLowerCase().contains("product_images_configuration"))
+				return null;
+
 			URL url = new URL(urlStr);
 			HttpURLConnection connection = (HttpURLConnection) url
 					.openConnection();
