@@ -12,6 +12,7 @@ public class DisableProducts {
 		try {
 			emc.open();
 			DAOJPA<Presentation> dao = DAOJPAFactory.createDAO(Presentation.class, emc);
+			dao.executeNativeUpdate("UPDATE presentation pr SET pr.enabled = true;");
 			dao.executeNativeUpdate("UPDATE presentation pr "
 					+ "INNER JOIN product pd ON pd.id = pr.product_id "
 					+ "INNER JOIN drug d ON d.id = pd.id "

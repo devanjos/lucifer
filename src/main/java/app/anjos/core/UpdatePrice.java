@@ -17,11 +17,11 @@ public class UpdatePrice {
 	private static final String INPUT_2 = "files/2. precos_manuais.txt";
 
 	public static void main(String[] args) throws Exception {
-		aplicarFormulaPreco();
-		verificarPrecoManual();
+		aplicarPrecoFormula();
+		aplicarPrecoManual();
 	}
 
-	private static void aplicarFormulaPreco() throws Exception {
+	private static void aplicarPrecoFormula() throws Exception {
 		EntityManagerController emc = new EntityManagerController();
 		try (BufferedReader reader = new BufferedReader(new FileReader(INPUT_1))) {
 			DAOJPA<Presentation> dao = DAOJPAFactory.createDAO(Presentation.class, emc);
@@ -83,31 +83,37 @@ public class UpdatePrice {
 		}
 	}
 
-	private static void verificarPrecoManual() throws Exception {
+	private static void aplicarPrecoManual() throws Exception {
 		EntityManagerController emc = new EntityManagerController();
 		try (BufferedReader reader = new BufferedReader(new FileReader(INPUT_2))) {
 			DAOJPA<Presentation> dao = DAOJPAFactory.createDAO(Presentation.class, emc);
 			dao.setUseTransaction(false);
 			emc.begin();
 
-			String line;
+			String[] line;
+			String code;
+			double priceAnjos;
 			Presentation p;
 			while (reader.ready()) {
-				line = reader.readLine().trim();
-				if (line.isEmpty())
-					continue;
+				line = reader.readLine().split(";");
+				code = line[0];
+				priceAnjos = 0;
+				if (line.length > 1 && !line[1].isEmpty())
+					priceAnjos = Double.parseDouble(line[1]);
 
 				JPQLBuilder jpql = new JPQLBuilder()
 						.where(new Clause("m.code = :code"))
-						.addParameter("code", line);
+						.addParameter("code", code);
 				p = dao.executeSingleQuery(jpql);
 
 				if (p == null) {
-					System.out.println("Produto não encontrado, EAN: " + line);
+					System.out.println("Produto manual não encontrado, EAN: " + code);
 					continue;
 				}
 
 				p.setManualPrice(true);
+				if (priceAnjos > 0)
+					p.setPriceAnjos(priceAnjos);
 				dao.save(p);
 			}
 
