@@ -121,7 +121,7 @@ public class PresentationPersister {
 
 			List<Substance> substances = new LinkedList<>();
 			for (Substance substance : drug.getSubstances()) {
-				if (!substanceCache.containsKey(substance.getName()))
+				if (!substanceCache.containsKey(substance.getName().toLowerCase()))
 					persistSubstance(substance);
 				substances.add(substanceCache.get(substance.getName()));
 			}
@@ -159,7 +159,7 @@ public class PresentationPersister {
 		DAOJPA<Substance> dao = DAOJPAFactory.createDAO(Substance.class, emc);
 		dao.setUseTransaction(false);
 		value = dao.save(value);
-		substanceCache.put(value.getName(), value);
+		substanceCache.put(value.getName().toLowerCase(), value);
 	}
 
 	private static synchronized void log(String msg) {
