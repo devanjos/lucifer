@@ -28,7 +28,7 @@ public class Presentation implements Model<Integer> {
 	@Column(length = 30)
 	private String ms;
 
-	@Column(columnDefinition = "TEXT")
+	@Column(length = 200)
 	private String name;
 
 	@Column(name = "manual_price")
