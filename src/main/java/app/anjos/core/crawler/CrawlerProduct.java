@@ -51,7 +51,9 @@ public class CrawlerProduct {
 			presentation.setName(element.findElement(By.tagName("a")).getAttribute("title").replace(productName, "").trim()); // Nome da Apresentação
 
 			element = e.findElement(By.className("presentation-offer-info__img"));
-			presentation.setImage(new Image("jpg", getByteArrayFromImageURL(element.getAttribute("data-src")))); // URL da imagem
+			Image image = new Image("jpg", getByteArrayFromImageURL(element.getAttribute("data-src")));
+			if (image.getData() != null && !image.getData().isEmpty())
+				presentation.setImage(image); // URL da imagem
 
 			presentation.setProduct(p);
 			presentations.add(presentation);

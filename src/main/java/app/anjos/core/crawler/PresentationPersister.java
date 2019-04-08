@@ -63,8 +63,10 @@ public class PresentationPersister {
 						.addParameter("code", presentation.getCode())
 						.addParameter("ms", presentation.getMs()));
 				presentation.setId(id);
+				if (presentation.getImage() != null && presentation.getImage().getData() == null)
+					presentation.setImage(null);
 				dao.save(presentation);
-			} ;
+			}
 			emc.commit();
 		} catch (Exception ex) {
 			emc.rollback();
@@ -94,7 +96,7 @@ public class PresentationPersister {
 
 	private void persistProduct(Product value) throws DatabaseException {
 		Supplier supplier = value.getSupplier();
-		if (!categoryCache.containsKey(supplier.getName()))
+		if (!supplierCache.containsKey(supplier.getName()))
 			persistSupplier(supplier);
 		value.setSupplier(supplierCache.get(supplier.getName()));
 
