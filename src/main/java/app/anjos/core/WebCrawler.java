@@ -1,6 +1,7 @@
 package app.anjos.core;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import org.openqa.selenium.By;
@@ -15,14 +16,18 @@ import io.matob.tools.FileUtils;
 
 public class WebCrawler implements Runnable {
 
-	private static final String FILE = "presentations.obj";
 	private static final String[] SECTIONS = new String[] { "0-9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
 			"Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
-	//private static final String[] SECTIONS = new String[] { "0-9" };
-	//private static final String[] SECTIONS = new String[] { "T" };
-
-	private static final boolean useFile = true;
 	private static List<Presentation> presentations = new LinkedList<>();
+
+	private static final String FILE = "presentations.obj";
+	private static final boolean useFile = true;
+
+	private static final boolean useList = false;
+	private static final List<String> URLs = new LinkedList<>(Arrays.asList(new String[] {
+			"https://consultaremedios.com.br/acido-zoledronico-abl-brasil/bula",
+			"https://consultaremedios.com.br/acido-zoledronico-cristalia/p"
+	}));
 
 	public static void main(String[] args) throws Exception {
 		if (!useFile || !new File(FILE).exists()) {
@@ -46,7 +51,7 @@ public class WebCrawler implements Runnable {
 	}
 
 	private static void saveToFile() throws Exception {
-		FileUtils.saveObject(null, FILE, presentations);
+		FileUtils.saveObject("", FILE, presentations);
 	}
 
 	private static List<Presentation> loadFromFile() throws Exception {
@@ -73,20 +78,18 @@ public class WebCrawler implements Runnable {
 		url = "https://consultaremedios.com.br/medicamentos/" + section;
 		options = new ChromeOptions();
 		options.addArguments("--headless");
-
-		toCrawler = new LinkedList<>();
 		listFinish = false;
 	}
 
 	@Override
 	public void run() {
 		Thread.currentThread().setName("Create Prod (" + subPoint + ")");
-		createListThread().start();
+		createList();
 
 		WebDriver driver = new ChromeDriver(options);
 		String url;
 		try {
-			while (!listFinish || !toCrawler.isEmpty()) {
+			while (!listFinish || toCrawler == null || !toCrawler.isEmpty()) {
 				while (toCrawler.isEmpty()) {
 					try {
 						Thread.sleep(100);
@@ -110,8 +113,16 @@ public class WebCrawler implements Runnable {
 		}
 	}
 
-	private Thread createListThread() {
-		return new Thread(() -> {
+	private void createList() {
+		toCrawler = new LinkedList<>();
+
+		if (useList) {
+			toCrawler.addAll(URLs);
+			listFinish = true;
+			return;
+		}
+
+		new Thread(() -> {
 			Thread.currentThread().setName("Create List (" + subPoint + ")");
 			WebDriver driver = new ChromeDriver(options);
 			int pag = 0;
@@ -132,7 +143,7 @@ public class WebCrawler implements Runnable {
 
 			log("END: " + count + " products");
 			listFinish = true;
-		});
+		}).start();
 	}
 
 	private static synchronized void log(String msg) {

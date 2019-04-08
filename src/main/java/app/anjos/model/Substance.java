@@ -18,7 +18,7 @@ public class Substance implements Model<Integer> {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@Column(length = 100)
+	@Column(columnDefinition = "TEXT")
 	private String name;
 
 	public Substance() {}

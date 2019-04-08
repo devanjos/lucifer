@@ -34,7 +34,7 @@ public class Product implements Model<Integer> {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@Column(length = 255)
+	@Column(columnDefinition = "TEXT")
 	private String name;
 
 	@ManyToOne(cascade = CascadeType.REFRESH)
