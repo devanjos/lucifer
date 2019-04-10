@@ -29,11 +29,16 @@ public class Category implements Model<Integer> {
 	@Column(length = 50)
 	private String name;
 
+	private boolean top = false;
+
 	private boolean featured = false;
 
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "image_id")
 	private Image image;
+
+	@Column(length = 7)
+	private String color;
 
 	@ManyToMany(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
 	@JoinTable(name = "category_subcategory", //
@@ -41,7 +46,8 @@ public class Category implements Model<Integer> {
 			inverseJoinColumns = { @JoinColumn(name = "subcategory_id") })
 	private List<Category> subcategories = new LinkedList<>();
 
-	public Category() {}
+	public Category() {
+	}
 
 	public Category(String name) {
 		super();
@@ -66,6 +72,14 @@ public class Category implements Model<Integer> {
 		this.name = name;
 	}
 
+	public boolean isTop() {
+		return top;
+	}
+
+	public void setTop(boolean top) {
+		this.top = top;
+	}
+
 	public boolean isFeatured() {
 		return featured;
 	}
@@ -80,6 +94,14 @@ public class Category implements Model<Integer> {
 
 	public void setImage(Image image) {
 		this.image = image;
+	}
+
+	public String getColor() {
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
 	}
 
 	public List<Category> getSubcategories() {

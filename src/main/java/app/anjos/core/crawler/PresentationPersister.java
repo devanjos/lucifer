@@ -1,5 +1,6 @@
 package app.anjos.core.crawler;
 
+import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,9 +54,9 @@ public class PresentationPersister {
 			for (Presentation presentation : presentations) {
 				log("SAVE: " + presentation.getCode() + "\t" + presentation.getProduct().getName() + presentation.getName());
 				product = presentation.getProduct();
-				if (!productCache.containsKey(product.getName()))
+				if (!productCache.containsKey(normalize(product.getName())))
 					persistProduct(product);
-				presentation.setProduct(productCache.get(product.getName()));
+				presentation.setProduct(productCache.get(normalize(product.getName())));
 				Integer id = dao.executeSingleQuery(new JPQLBuilder()
 						.select(new SField("m.id"))
 						.where(new Clause("m.code = :code"),
@@ -79,32 +80,32 @@ public class PresentationPersister {
 	private void loadCache() throws DatabaseException {
 		DAOJPAFactory.createDAO(Supplier.class, emc)
 				.findAll(null)
-				.forEach((s) -> supplierCache.put(s.getName(), s));
+				.forEach((s) -> supplierCache.put(normalize(s.getName()), s));
 		DAOJPAFactory.createDAO(Category.class, emc)
 				.findAll(null)
-				.forEach((s) -> categoryCache.put(s.getName(), s));
+				.forEach((s) -> categoryCache.put(normalize(s.getName()), s));
 		DAOJPAFactory.createDAO(Speciality.class, emc)
 				.findAll(null)
-				.forEach((s) -> specialityCache.put(s.getName(), s));
+				.forEach((s) -> specialityCache.put(normalize(s.getName()), s));
 		DAOJPAFactory.createDAO(Substance.class, emc)
 				.findAll(null)
-				.forEach((s) -> substanceCache.put(s.getName(), s));
+				.forEach((s) -> substanceCache.put(normalize(s.getName()), s));
 		DAOJPAFactory.createDAO(Product.class, emc)
 				.findAll(null)
-				.forEach((s) -> productCache.put(s.getName(), s));
+				.forEach((s) -> productCache.put(normalize(s.getName()), s));
 	}
 
 	private void persistProduct(Product value) throws DatabaseException {
 		Supplier supplier = value.getSupplier();
-		if (!supplierCache.containsKey(supplier.getName()))
+		if (!supplierCache.containsKey(normalize(supplier.getName())))
 			persistSupplier(supplier);
-		value.setSupplier(supplierCache.get(supplier.getName()));
+		value.setSupplier(supplierCache.get(normalize(supplier.getName())));
 
 		List<Category> categories = new LinkedList<>();
 		for (Category category : value.getCategories()) {
-			if (!categoryCache.containsKey(category.getName()))
+			if (!categoryCache.containsKey(normalize(category.getName())))
 				persistCategory(category);
-			categories.add(categoryCache.get(category.getName()));
+			categories.add(categoryCache.get(normalize(category.getName())));
 		}
 		value.setCategories(categories);
 
@@ -113,17 +114,17 @@ public class PresentationPersister {
 
 			List<Speciality> specialities = new LinkedList<>();
 			for (Speciality speciality : drug.getSpecialities()) {
-				if (!specialityCache.containsKey(speciality.getName()))
+				if (!specialityCache.containsKey(normalize(speciality.getName())))
 					persistSpeciality(speciality);
-				specialities.add(specialityCache.get(speciality.getName()));
+				specialities.add(specialityCache.get(normalize(speciality.getName())));
 			}
 			drug.setSpecialities(specialities);
 
 			List<Substance> substances = new LinkedList<>();
 			for (Substance substance : drug.getSubstances()) {
-				if (!substanceCache.containsKey(substance.getName().toLowerCase()))
+				if (!substanceCache.containsKey(normalize(substance.getName())))
 					persistSubstance(substance);
-				substances.add(substanceCache.get(substance.getName()));
+				substances.add(substanceCache.get(normalize(substance.getName())));
 			}
 			drug.setSubstances(substances);
 		}
@@ -131,35 +132,39 @@ public class PresentationPersister {
 		DAOJPA<Product> dao = DAOJPAFactory.createDAO(Product.class, emc);
 		dao.setUseTransaction(false);
 		value = dao.save(value);
-		productCache.put(value.getName(), value);
+		productCache.put(normalize(value.getName()), value);
 	}
 
 	private void persistSupplier(Supplier value) throws DatabaseException {
 		DAOJPA<Supplier> dao = DAOJPAFactory.createDAO(Supplier.class, emc);
 		dao.setUseTransaction(false);
 		value = dao.save(value);
-		supplierCache.put(value.getName(), value);
+		supplierCache.put(normalize(value.getName()), value);
 	}
 
 	private void persistCategory(Category value) throws DatabaseException {
 		DAOJPA<Category> dao = DAOJPAFactory.createDAO(Category.class, emc);
 		dao.setUseTransaction(false);
 		value = dao.save(value);
-		categoryCache.put(value.getName(), value);
+		categoryCache.put(normalize(value.getName()), value);
 	}
 
 	private void persistSpeciality(Speciality value) throws DatabaseException {
 		DAOJPA<Speciality> dao = DAOJPAFactory.createDAO(Speciality.class, emc);
 		dao.setUseTransaction(false);
 		value = dao.save(value);
-		specialityCache.put(value.getName(), value);
+		specialityCache.put(normalize(value.getName()), value);
 	}
 
 	private void persistSubstance(Substance value) throws DatabaseException {
 		DAOJPA<Substance> dao = DAOJPAFactory.createDAO(Substance.class, emc);
 		dao.setUseTransaction(false);
 		value = dao.save(value);
-		substanceCache.put(value.getName().toLowerCase(), value);
+		substanceCache.put(normalize(value.getName()), value);
+	}
+
+	public static String normalize(String str) {
+		return Normalizer.normalize(str.toLowerCase(), Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
 	}
 
 	private static synchronized void log(String msg) {

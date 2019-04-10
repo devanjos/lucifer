@@ -45,7 +45,7 @@ public class CrawlerCategory {
 		}
 	}
 
-	private static Category execute(String url, boolean featured) throws Exception {
+	private static Category execute(String url, boolean topCategory) throws Exception {
 		System.out.println("GET: " + url);
 		Category category = null;
 		driver.get(url);
@@ -59,7 +59,7 @@ public class CrawlerCategory {
 				return category;
 
 			category = new Category(name);
-			category.setFeatured(featured);
+			category.setTop(topCategory);
 		}
 
 		List<String> urls = new LinkedList<>();
