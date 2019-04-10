@@ -93,13 +93,17 @@ public class UpdatePrice {
 			String[] line;
 			String code;
 			double priceAnjos;
+			double pricePharmacy;
 			Presentation p;
 			while (reader.ready()) {
 				line = reader.readLine().split(";");
 				code = line[0];
 				priceAnjos = 0;
+				pricePharmacy = 0;
 				if (line.length > 1 && !line[1].isEmpty())
-					priceAnjos = Double.parseDouble(line[1]);
+					priceAnjos = MathUtils.round(Double.parseDouble(line[1]), 2);
+				if (line.length > 2 && !line[2].isEmpty())
+					pricePharmacy = MathUtils.round(Double.parseDouble(line[2]), 2);
 
 				JPQLBuilder jpql = new JPQLBuilder()
 						.where(new Clause("m.code = :code"))
@@ -114,6 +118,8 @@ public class UpdatePrice {
 				p.setManualPrice(true);
 				if (priceAnjos > 0)
 					p.setPriceAnjos(priceAnjos);
+				if (pricePharmacy > 0)
+					p.setPriceAnjos(pricePharmacy);
 				dao.save(p);
 			}
 
