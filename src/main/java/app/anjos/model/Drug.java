@@ -1,5 +1,6 @@
 package app.anjos.model;
 
+import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -10,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "drug")
@@ -20,7 +23,7 @@ public class Drug extends Product {
 
 	private Character type; // R - Referência, G - Genérico, S - Similar
 
-	private Boolean prescription = false;
+	private String prescription;
 
 	@Column(columnDefinition = "TEXT")
 	private String indications;
@@ -42,6 +45,12 @@ public class Drug extends Product {
 			inverseJoinColumns = { @JoinColumn(name = "substance_id") })
 	private List<Substance> substances = new LinkedList<>();
 
+	@CreationTimestamp
+	private LocalDate createdAt;
+
+	@UpdateTimestamp
+	private LocalDate updatedAt;
+
 	public Drug() {}
 
 	public Character getType() {
@@ -52,11 +61,11 @@ public class Drug extends Product {
 		this.type = type;
 	}
 
-	public Boolean getPrescription() {
+	public String getPrescription() {
 		return prescription;
 	}
 
-	public void setPrescription(Boolean prescription) {
+	public void setPrescription(String prescription) {
 		this.prescription = prescription;
 	}
 
@@ -98,5 +107,25 @@ public class Drug extends Product {
 
 	public void setSubstances(List<Substance> substances) {
 		this.substances = substances;
+	}
+
+	@Override
+	public LocalDate getCreatedAt() {
+		return createdAt;
+	}
+
+	@Override
+	public void setCreatedAt(LocalDate createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	@Override
+	public LocalDate getUpdatedAt() {
+		return updatedAt;
+	}
+
+	@Override
+	public void setUpdatedAt(LocalDate updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 }

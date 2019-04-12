@@ -101,13 +101,13 @@ public class PresentationPersister {
 			persistSupplier(supplier);
 		value.setSupplier(supplierCache.get(normalize(supplier.getName())));
 
-		List<Category> categories = new LinkedList<>();
-		for (Category category : value.getCategories()) {
-			if (!categoryCache.containsKey(normalize(category.getName())))
-				persistCategory(category);
-			categories.add(categoryCache.get(normalize(category.getName())));
-		}
-		value.setCategories(categories);
+		if (value.getName().endsWith(supplier.getName()))
+			value.setName(value.getName().replaceAll(" ? -? ?" + supplier.getName(), "").trim());
+
+		Category category = value.getCategory();
+		if (!categoryCache.containsKey(normalize(category.getName())))
+			persistCategory(category);
+		value.setCategory(categoryCache.get(normalize(category.getName())));
 
 		if (value instanceof Drug) {
 			Drug drug = (Drug) value;

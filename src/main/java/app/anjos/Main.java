@@ -1,7 +1,7 @@
 package app.anjos;
 
 import app.anjos.core.CreateDatabase;
-import app.anjos.core.DisableProducts;
+import app.anjos.core.Scripts;
 import app.anjos.core.RemoveImages;
 import app.anjos.core.UpdatePrice;
 import app.anjos.core.WebCrawler;
@@ -14,7 +14,7 @@ public class Main {
 		CrawlerCategory.main(args);
 		WebCrawler.main(args);
 		UpdatePrice.main(args);
-		DisableProducts.main(args);
+		Scripts.main(args);
 		RemoveImages.main(args);
 	}
 }

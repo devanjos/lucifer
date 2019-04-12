@@ -1,11 +1,14 @@
 package app.anjos.model;
 
+import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import io.matob.database.Model;
 
 @Entity
@@ -23,6 +26,12 @@ public class Image implements Model<Integer> {
 
 	@Column(columnDefinition = "MEDIUMTEXT")
 	private String data;
+
+	@CreationTimestamp
+	private LocalDate createdAt;
+
+	@UpdateTimestamp
+	private LocalDate updatedAt;
 
 	public Image() {}
 
@@ -55,6 +64,22 @@ public class Image implements Model<Integer> {
 
 	public void setData(String data) {
 		this.data = data;
+	}
+
+	public LocalDate getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDate createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDate getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDate updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 
 	@Override

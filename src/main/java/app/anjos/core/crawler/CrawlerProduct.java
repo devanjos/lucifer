@@ -2,8 +2,13 @@ package app.anjos.core.crawler;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,7 +32,7 @@ public class CrawlerProduct {
 		this.driver = driver;
 	}
 
-	public List<Presentation> execute() {
+	public List<Presentation> execute() throws IOException {
 		List<WebElement> elements;
 		WebElement element;
 		String redirectUrl;
@@ -71,7 +76,7 @@ public class CrawlerProduct {
 			else if ("Tipo do Medicamento".equals(block))
 				p.setType(getDrugType(value)); // Tipo de Medicamento
 			else if ("Necessita de Receita".equals(block))
-				p.setPrescription(value.toLowerCase().startsWith("sim")); // Necessita de Receita
+				p.setPrescription(value); // Necessita de Receita
 			else if ("Princípio Ativo".equals(block)) {
 				String[] substances = value.split("\\+");
 				List<Substance> substancesList = new LinkedList<>();
@@ -79,7 +84,7 @@ public class CrawlerProduct {
 					substancesList.add(new Substance(s.trim()));
 				p.setSubstances(substancesList);
 			} else if ("Categoria do Medicamento".equals(block)) {
-				p.getCategories().add(new Category(value)); // Categoria do Medicamento
+				p.setCategory(new Category(value)); // Categoria do Medicamento
 			} else if ("Especialidades".equals(block)) {
 				String[] specialities = value.split(",");
 				List<Speciality> specialitiesList = new LinkedList<>();
@@ -108,7 +113,10 @@ public class CrawlerProduct {
 				String bulaUrl = element.getAttribute("href");
 				bulaUrl = bulaUrl.replace("https://docs.google.com/gview?url=", "");
 				bulaUrl = bulaUrl.substring(0, bulaUrl.indexOf("?"));
-				p.setBula(bulaUrl);;
+
+				String code = "" + System.currentTimeMillis();
+				p.setBula(code);
+				downloadBula(code, bulaUrl);
 			}
 		}
 
@@ -155,5 +163,12 @@ public class CrawlerProduct {
 		} catch (Exception e) {
 			return null;
 		}
+	}
+
+	private static void downloadBula(String ean, String url) throws IOException {
+		URL _url = new URL(url);
+		String fileName = ean + ".pdf";
+		Path targetPath = new File("output/bulas/" + fileName).toPath();
+		Files.copy(_url.openStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 	}
 }

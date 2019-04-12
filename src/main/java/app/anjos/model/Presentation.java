@@ -1,5 +1,6 @@
 package app.anjos.model;
 
+import java.time.LocalDate;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import io.matob.database.Model;
 
 @Entity
@@ -55,6 +58,14 @@ public class Presentation implements Model<Integer> {
 	private Product product;
 
 	private Boolean enabled = true;
+
+	private boolean shouldUpdate = true;
+
+	@CreationTimestamp
+	private LocalDate createdAt;
+
+	@UpdateTimestamp
+	private LocalDate updatedAt;
 
 	public Presentation() {}
 
@@ -154,6 +165,30 @@ public class Presentation implements Model<Integer> {
 
 	public void setEnabled(Boolean enabled) {
 		this.enabled = enabled;
+	}
+
+	public boolean isShouldUpdate() {
+		return shouldUpdate;
+	}
+
+	public void setShouldUpdate(boolean shouldUpdate) {
+		this.shouldUpdate = shouldUpdate;
+	}
+
+	public LocalDate getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDate createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDate getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDate updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 
 	@Override

@@ -1,11 +1,14 @@
 package app.anjos.model;
 
+import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import io.matob.database.Model;
 
 @Entity
@@ -20,6 +23,12 @@ public class Substance implements Model<Integer> {
 
 	@Column(length = 200)
 	private String name;
+
+	@CreationTimestamp
+	private LocalDate createdAt;
+
+	@UpdateTimestamp
+	private LocalDate updatedAt;
 
 	public Substance() {}
 
@@ -43,6 +52,22 @@ public class Substance implements Model<Integer> {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public LocalDate getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDate createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDate getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDate updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 
 	@Override

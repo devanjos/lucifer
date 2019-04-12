@@ -33,7 +33,7 @@ public class CrawlerCategory {
 			emc.begin();
 			dao = DAOJPAFactory.createDAO(Category.class, emc);
 			dao.setUseTransaction(false);
-			execute("https://consultaremedios.com.br/categorias", true);
+			execute("https://consultaremedios.com.br/categorias", null);
 			emc.commit();
 		} catch (Exception ex) {
 			emc.rollback();
@@ -45,7 +45,7 @@ public class CrawlerCategory {
 		}
 	}
 
-	private static Category execute(String url, boolean topCategory) throws Exception {
+	private static Category execute(String url, Category parent) throws Exception {
 		System.out.println("GET: " + url);
 		Category category = null;
 		driver.get(url);
@@ -59,7 +59,7 @@ public class CrawlerCategory {
 				return category;
 
 			category = new Category(name);
-			category.setTop(topCategory);
+			category.setParent(parent);
 		}
 
 		List<String> urls = new LinkedList<>();
@@ -67,11 +67,8 @@ public class CrawlerCategory {
 			urls.add(e.findElement(By.tagName("a")).getAttribute("href"));
 
 		Category c;
-		for (String u : urls) {
-			c = execute(u, category == null);
-			if (category != null)
-				category.getSubcategories().add(c);
-		}
+		for (String u : urls)
+			c = execute(u, category);
 
 		if (category != null)
 			category = dao.save(category);

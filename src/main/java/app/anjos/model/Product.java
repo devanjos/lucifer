@@ -1,7 +1,6 @@
 package app.anjos.model;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.time.LocalDate;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
@@ -14,11 +13,11 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import io.matob.database.Model;
 
 @Entity
@@ -28,7 +27,7 @@ import io.matob.database.Model;
 @DiscriminatorValue("P")
 public class Product implements Model<Integer> {
 
-	private static final long serialVersionUID = -6071652540687665820L;
+	private static final long serialVersionUID = -1619791764038247258L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,11 +49,17 @@ public class Product implements Model<Integer> {
 	@Column(name = "featured_priority")
 	private Integer featuredPriority;
 
-	@ManyToMany(cascade = CascadeType.REFRESH)
-	@JoinTable(name = "product_category", //
-			joinColumns = { @JoinColumn(name = "product_id") }, //
-			inverseJoinColumns = { @JoinColumn(name = "category_id") })
-	private List<Category> categories = new LinkedList<>();
+	@ManyToOne(cascade = CascadeType.REFRESH)
+	@JoinColumn(name = "category_id")
+	private Category category;
+
+	private boolean shouldUpdate = true;
+
+	@CreationTimestamp
+	private LocalDate createdAt;
+
+	@UpdateTimestamp
+	private LocalDate updatedAt;
 
 	public Product() {}
 
@@ -104,16 +109,40 @@ public class Product implements Model<Integer> {
 		this.featuredPriority = featuredPriority;
 	}
 
-	public List<Category> getCategories() {
-		return categories;
-	}
-
-	public void setCategories(List<Category> categories) {
-		this.categories = categories;
-	}
-
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public Category getCategory() {
+		return category;
+	}
+
+	public void setCategory(Category category) {
+		this.category = category;
+	}
+
+	public boolean isShouldUpdate() {
+		return shouldUpdate;
+	}
+
+	public void setShouldUpdate(boolean shouldUpdate) {
+		this.shouldUpdate = shouldUpdate;
+	}
+
+	public LocalDate getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDate createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDate getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDate updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 
 	@Override
