@@ -24,11 +24,11 @@ import app.anjos.model.Speciality;
 import app.anjos.model.Substance;
 import app.anjos.model.Supplier;
 
-public class CrawlerProduct {
+public class CrawlerDrugs {
 
 	private WebDriver driver;
 
-	public CrawlerProduct(WebDriver driver) {
+	public CrawlerDrugs(WebDriver driver) {
 		this.driver = driver;
 	}
 

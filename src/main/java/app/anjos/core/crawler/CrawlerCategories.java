@@ -14,7 +14,7 @@ import io.matob.database.jpa.DAOJPA;
 import io.matob.database.jpa.DAOJPAFactory;
 import io.matob.database.jpa.EntityManagerController;
 
-public class CrawlerCategory {
+public class CrawlerCategories {
 
 	private static ChromeOptions options = new ChromeOptions();
 	private static WebDriver driver;

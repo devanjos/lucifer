@@ -9,7 +9,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import app.anjos.core.crawler.CrawlerProduct;
+import app.anjos.core.crawler.CrawlerDrugs;
 import app.anjos.core.crawler.PresentationPersister;
 import app.anjos.model.Presentation;
 import io.matob.tools.FileUtils;
@@ -99,7 +99,7 @@ public class WebCrawler implements Runnable {
 					url = toCrawler.remove(toCrawler.size() - 1);
 					log("GET " + url);
 					driver.get(url);
-					addPresentations(new CrawlerProduct(driver).execute());
+					addPresentations(new CrawlerDrugs(driver).execute());
 				} catch (Exception ex) {
 					System.err.println(driver.getCurrentUrl());
 					ex.printStackTrace();
