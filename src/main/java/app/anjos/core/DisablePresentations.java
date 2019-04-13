@@ -41,8 +41,8 @@ public class DisablePresentations {
 					+ "SET pr.enabled = false "
 					+ "WHERE pr.price_anjos IS NULL "
 					+ "OR pr.price_anjos <= 0 "
-					+ "OR pr.code NOT IN(" + StringUtils.concat(_permitidos) + ") "
-					+ "OR LOWER(s.name) NOT IN(" + StringUtils.concat(_laboratorios) + ");");
+					+ "OR pr.code NOT IN(" + StringUtils.concat(",", _permitidos) + ") "
+					+ "OR LOWER(s.name) NOT IN(" + StringUtils.concat(",", _laboratorios) + ");");
 		} finally {
 			emc.close();
 		}

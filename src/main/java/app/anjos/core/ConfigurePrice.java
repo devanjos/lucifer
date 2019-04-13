@@ -109,7 +109,7 @@ public class ConfigurePrice {
 			if (priceAnjos > 0)
 				pr.setPriceAnjos(priceAnjos);
 			if (pricePharmacy > 0)
-				pr.setPriceAnjos(pricePharmacy);
+				pr.setPricePharmacy(pricePharmacy);
 
 			dao.save(pr);
 		}
