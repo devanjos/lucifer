@@ -2,13 +2,9 @@ package app.anjos.core.crawler;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,6 +57,7 @@ public class CrawlerDrugs {
 				presentation.setImage(image); // URL da imagem
 
 			presentation.setProduct(p);
+			presentation.setDataSource("consultaremedios.com.br");
 			presentations.add(presentation);
 		}
 
@@ -114,9 +111,7 @@ public class CrawlerDrugs {
 				bulaUrl = bulaUrl.replace("https://docs.google.com/gview?url=", "");
 				bulaUrl = bulaUrl.substring(0, bulaUrl.indexOf("?"));
 
-				String code = "" + System.currentTimeMillis();
-				p.setBula(code);
-				downloadBula(code, bulaUrl);
+				p.setBula(bulaUrl);
 			}
 		}
 
@@ -165,10 +160,16 @@ public class CrawlerDrugs {
 		}
 	}
 
-	private static void downloadBula(String ean, String url) throws IOException {
-		URL _url = new URL(url);
+	private static void downloadBula(String ean, String urlStr) throws IOException {
+		/*URL url = new URL(urlStr);
+		HttpURLConnection connection = (HttpURLConnection) url
+				.openConnection();
+		connection.setRequestProperty(
+				"User-Agent",
+				"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.65 Safari/537.31");
+		
 		String fileName = ean + ".pdf";
 		Path targetPath = new File("output/bulas/" + fileName).toPath();
-		Files.copy(_url.openStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+		Files.copy(connection.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);*/
 	}
 }

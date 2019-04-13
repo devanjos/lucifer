@@ -1,6 +1,6 @@
 package app.anjos.model;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -59,13 +59,22 @@ public class Presentation implements Model<Integer> {
 
 	private Boolean enabled = true;
 
+	@Column(name = "should_update")
 	private boolean shouldUpdate = true;
 
 	@CreationTimestamp
-	private LocalDate createdAt;
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
 
 	@UpdateTimestamp
-	private LocalDate updatedAt;
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
+
+	@Column(name = "data_source")
+	private String dataSource;
+
+	@Column(name = "price_source")
+	private String priceSource;
 
 	public Presentation() {}
 
@@ -175,20 +184,36 @@ public class Presentation implements Model<Integer> {
 		this.shouldUpdate = shouldUpdate;
 	}
 
-	public LocalDate getCreatedAt() {
+	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
 
-	public void setCreatedAt(LocalDate createdAt) {
+	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
 
-	public LocalDate getUpdatedAt() {
+	public LocalDateTime getUpdatedAt() {
 		return updatedAt;
 	}
 
-	public void setUpdatedAt(LocalDate updatedAt) {
+	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	public String getDataSource() {
+		return dataSource;
+	}
+
+	public void setDataSource(String dataSource) {
+		this.dataSource = dataSource;
+	}
+
+	public String getPriceSource() {
+		return priceSource;
+	}
+
+	public void setPriceSource(String priceSource) {
+		this.priceSource = priceSource;
 	}
 
 	@Override

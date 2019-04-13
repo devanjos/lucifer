@@ -1,6 +1,6 @@
 package app.anjos.model;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -42,10 +42,12 @@ public class Category implements Model<Integer> {
 	private Category parent;
 
 	@CreationTimestamp
-	private LocalDate createdAt;
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
 
 	@UpdateTimestamp
-	private LocalDate updatedAt;
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
 
 	public Category() {}
 
@@ -104,19 +106,19 @@ public class Category implements Model<Integer> {
 		this.parent = parent;
 	}
 
-	public LocalDate getCreatedAt() {
+	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
 
-	public void setCreatedAt(LocalDate createdAt) {
+	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
 
-	public LocalDate getUpdatedAt() {
+	public LocalDateTime getUpdatedAt() {
 		return updatedAt;
 	}
 
-	public void setUpdatedAt(LocalDate updatedAt) {
+	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}
 

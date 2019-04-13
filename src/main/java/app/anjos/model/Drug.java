@@ -1,6 +1,6 @@
 package app.anjos.model;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -46,10 +46,12 @@ public class Drug extends Product {
 	private List<Substance> substances = new LinkedList<>();
 
 	@CreationTimestamp
-	private LocalDate createdAt;
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
 
 	@UpdateTimestamp
-	private LocalDate updatedAt;
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
 
 	public Drug() {}
 
@@ -110,22 +112,22 @@ public class Drug extends Product {
 	}
 
 	@Override
-	public LocalDate getCreatedAt() {
+	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
 
 	@Override
-	public void setCreatedAt(LocalDate createdAt) {
+	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
 
 	@Override
-	public LocalDate getUpdatedAt() {
+	public LocalDateTime getUpdatedAt() {
 		return updatedAt;
 	}
 
 	@Override
-	public void setUpdatedAt(LocalDate updatedAt) {
+	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}
 }

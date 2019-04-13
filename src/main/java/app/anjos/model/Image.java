@@ -1,6 +1,6 @@
 package app.anjos.model;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -28,10 +28,12 @@ public class Image implements Model<Integer> {
 	private String data;
 
 	@CreationTimestamp
-	private LocalDate createdAt;
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
 
 	@UpdateTimestamp
-	private LocalDate updatedAt;
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
 
 	public Image() {}
 
@@ -66,19 +68,19 @@ public class Image implements Model<Integer> {
 		this.data = data;
 	}
 
-	public LocalDate getCreatedAt() {
+	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
 
-	public void setCreatedAt(LocalDate createdAt) {
+	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
 
-	public LocalDate getUpdatedAt() {
+	public LocalDateTime getUpdatedAt() {
 		return updatedAt;
 	}
 
-	public void setUpdatedAt(LocalDate updatedAt) {
+	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}
 
