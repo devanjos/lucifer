@@ -54,7 +54,7 @@ public class Scripts {
 		dao.executeNativeUpdate("UPDATE product p SET p.featured = false;");
 		dao.executeNativeUpdate("UPDATE product p INNER JOIN supplier s ON s.id = p.supplier_id SET p.featured = true WHERE p.name IN ("
 				+ "'Repoflor', "
-				+ "'Ibuflex Cápsula', "
+				+ "'Seakalm', "
 				+ "'Expec', "
 				+ "'Vodol Prevent', "
 				+ "'Neosoro', "
