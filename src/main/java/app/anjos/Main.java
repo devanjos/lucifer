@@ -7,13 +7,13 @@ import app.anjos.core.DownloadBulas;
 import app.anjos.core.RemoveImages;
 import app.anjos.core.Scripts;
 import app.anjos.core.WebCrawler;
-import app.anjos.core.crawler.CrawlerCategories;
+import app.anjos.core.crawler.CrawlerCategoriesConsultaRemedios;
 
 public class Main {
 
 	public static void main(String[] args) throws Exception {
 		CreateDatabase.main(args);
-		CrawlerCategories.main(args);
+		CrawlerCategoriesConsultaRemedios.main(args);
 		WebCrawler.main(args);
 
 		RemoveImages.main(args);
