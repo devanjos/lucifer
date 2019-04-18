@@ -60,7 +60,7 @@ public class ConfigurePrice {
 			ms = line[1];
 			priceSupplier = Double.parseDouble(line[2]);
 			princeMax = Double.parseDouble(line[3]);
-			priceSource = line[4];
+			priceSource = DIR_FORMULA + "/" + line[4];
 
 			pr = searchPresentation(code, ms);
 			if (pr == null || !(pr.getProduct() instanceof Drug) || (pr.getManualPrice() && pr.getPriceAnjos() != null && pr.getPriceAnjos() > 0))
@@ -93,7 +93,7 @@ public class ConfigurePrice {
 			ms = line[1];
 			pricePharmacy = MathUtils.round(Double.parseDouble(line[2]), 2);
 			priceAnjos = MathUtils.round(Double.parseDouble(line[3]), 2);
-			priceSource = line[4];
+			priceSource = DIR_MANUAL + "/" + line[4];
 
 			pr = searchPresentation(code, ms);
 			if (pr == null)

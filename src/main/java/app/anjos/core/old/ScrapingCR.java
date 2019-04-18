@@ -1,4 +1,4 @@
-package app.anjos.core;
+package app.anjos.core.old;
 
 import java.io.File;
 import java.util.Arrays;
@@ -9,12 +9,11 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import app.anjos.core.crawler.CrawlerDrugs;
-import app.anjos.core.crawler.PresentationPersister;
+import app.anjos.core.PresentationPersister;
 import app.anjos.model.Presentation;
 import io.matob.tools.FileUtils;
 
-public class WebCrawler implements Runnable {
+public class ScrapingCR implements Runnable {
 
 	private static final String[] SECTIONS = new String[] { "0-9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
 			"Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
@@ -36,7 +35,7 @@ public class WebCrawler implements Runnable {
 			List<Thread> jobs = new LinkedList<>();
 			Thread j;
 			for (String s : SECTIONS) {
-				j = new Thread(new WebCrawler(s));
+				j = new Thread(new ScrapingCR(s));
 				jobs.add(j);
 				j.start();
 			}
@@ -73,7 +72,7 @@ public class WebCrawler implements Runnable {
 	private List<String> toCrawler;
 	private boolean listFinish;
 
-	private WebCrawler(String section) {
+	private ScrapingCR(String section) {
 		subPoint = section;
 		url = "https://consultaremedios.com.br/medicamentos/" + section;
 		options = new ChromeOptions();
@@ -99,7 +98,7 @@ public class WebCrawler implements Runnable {
 					url = toCrawler.remove(toCrawler.size() - 1);
 					log("GET " + url);
 					driver.get(url);
-					addPresentations(new CrawlerDrugs(driver).execute());
+					addPresentations(new ScrapingDrugsCR(driver).execute());
 				} catch (Exception ex) {
 					System.err.println(driver.getCurrentUrl());
 					ex.printStackTrace();

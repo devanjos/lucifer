@@ -1,4 +1,4 @@
-package app.anjos.core.crawler;
+package app.anjos.core.old;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -20,11 +20,11 @@ import app.anjos.model.Speciality;
 import app.anjos.model.Substance;
 import app.anjos.model.Supplier;
 
-public class CrawlerDrugs {
+public class ScrapingDrugsCR {
 
 	private WebDriver driver;
 
-	public CrawlerDrugs(WebDriver driver) {
+	public ScrapingDrugsCR(WebDriver driver) {
 		this.driver = driver;
 	}
 

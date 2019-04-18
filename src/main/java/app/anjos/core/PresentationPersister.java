@@ -1,4 +1,4 @@
-package app.anjos.core.crawler;
+package app.anjos.core;
 
 import java.text.Normalizer;
 import java.util.HashMap;
