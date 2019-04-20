@@ -32,15 +32,37 @@ public abstract class AbstractScraping<O extends Object> implements WebDriver, C
 	protected Map<String, WebElement> elementMap;
 	protected Map<String, List<WebElement>> elementsMap;
 
+	private List<O> data;
+
 	public AbstractScraping() {
+		elementMap = new HashMap<>();
+		elementsMap = new HashMap<>();
+
+		data = new LinkedList<>();
+	}
+
+	private void createDriver() {
 		if (DRIVER_CLASS.equals(ChromeDriver.class)) {
 			ChromeOptions options = new ChromeOptions();
 			options.addArguments("--headless");
 			driver = new ChromeDriver(options);
 		}
+	}
 
-		elementMap = new HashMap<>();
-		elementsMap = new HashMap<>();
+	public List<O> getData() {
+		return data;
+	}
+
+	public synchronized void addData(O data) {
+		synchronized (this.data) {
+			this.data.add(data);
+		}
+	}
+
+	public synchronized void addAllData(List<O> data) {
+		synchronized (this.data) {
+			this.data.addAll(data);
+		}
 	}
 
 	public Map<String, Object> GET(String url, Map<String, String> params) {
@@ -67,6 +89,9 @@ public abstract class AbstractScraping<O extends Object> implements WebDriver, C
 	}
 
 	public void visit(String url) {
+		if (driver == null)
+			createDriver();
+
 		Logger.getGlobal().log(Level.INFO, "Visit: " + url);
 		driver.get(url);
 	}
@@ -79,49 +104,72 @@ public abstract class AbstractScraping<O extends Object> implements WebDriver, C
 		return existsElement(cache) ? elementMap.get(cache) : null;
 	}
 
-	protected void setElement(String cache, WebElement element) {
+	protected void setElement(WebElement element) {
+		elementMap.put(DEFAULT_CACHE, element);
+	}
+
+	protected void setElement(WebElement element, String cache) {
 		elementMap.put(cache, element);
 	}
 
-	public WebElement find(By by) {
-		return find(by, true);
+	// --------------------------------------------------------------
+
+	public WebElement findD(By by) {
+		return find(false, null, by, DEFAULT_CACHE);
 	}
 
-	public WebElement find(By by, boolean cache) {
-		return find(false, by, cache, DEFAULT_CACHE);
+	public WebElement findD(By by, boolean cache) {
+		return find(false, null, by, ((cache) ? DEFAULT_CACHE : null));
 	}
 
-	public WebElement find(By by, String cache) {
-		return find(false, by, true, cache);
+	public WebElement findD(By by, String cache) {
+		return find(false, null, by, cache);
 	}
 
-	public WebElement findInElement(By by) {
-		return findInElement(by, true);
+	// --------------------------------------------------------------
+
+	public WebElement findE(By by) {
+		return find(true, getElement(), by, DEFAULT_CACHE);
 	}
 
-	public WebElement findInElement(By by, boolean cache) {
-		return find(true, by, cache, DEFAULT_CACHE);
+	public WebElement findE(By by, boolean cache) {
+		return find(true, getElement(), by, ((cache) ? DEFAULT_CACHE : null));
 	}
 
-	public WebElement findInElement(By by, String cache) {
-		return find(true, by, true, cache);
+	public WebElement findE(By by, String cache) {
+		return find(true, getElement(cache), by, cache);
 	}
 
-	protected WebElement find(boolean useElement, By by, boolean cache, String cacheName) {
-		WebElement element = null;
+	public WebElement findE(By by, String inCache, String cache) {
+		return find(true, getElement(inCache), by, cache);
+	}
 
-		if (useElement && (!elementMap.containsKey(cacheName) || elementMap.get(cacheName) == null)) {
-			if (cache)
-				setElement(cacheName, element);
-			return element;
-		}
+	public WebElement findE(WebElement element, By by) {
+		return find(true, element, by, DEFAULT_CACHE);
+	}
+
+	public WebElement findE(WebElement element, By by, boolean cache) {
+		return find(true, element, by, ((cache) ? DEFAULT_CACHE : null));
+	}
+
+	public WebElement findE(WebElement element, By by, String cache) {
+		return find(true, element, by, cache);
+	}
+
+	// --------------------------------------------------------------
+
+	private WebElement find(boolean useElement, WebElement element, By by, String cache) {
+		if (useElement && element == null)
+			return null;
 
 		try {
-			element = ((useElement) ? elementMap.get(cacheName) : driver).findElement(by);
-		} catch (Exception ex) {}
+			element = ((useElement) ? element : driver).findElement(by);
+		} catch (Exception ex) {
+			element = null;
+		}
 
-		if (cache)
-			elementMap.put(cacheName, element);
+		if (cache != null)
+			elementMap.put(cache, element);
 
 		return element;
 	}
@@ -146,51 +194,85 @@ public abstract class AbstractScraping<O extends Object> implements WebDriver, C
 		return getElements(DEFAULT_CACHE);
 	}
 
+	protected WebElement getElements(int index) {
+		return getElements(DEFAULT_CACHE, index);
+	}
+
 	protected List<WebElement> getElements(String cache) {
 		return existsElements(cache) ? elementsMap.get(cache) : new LinkedList<>();
 	}
 
-	protected void setElements(String cache, List<WebElement> elements) {
+	protected WebElement getElements(String cache, int index) {
+		return existsElements(cache) ? elementsMap.get(cache).get(index) : null;
+	}
+
+	protected void setElements(List<WebElement> elements, String cache) {
 		elementsMap.put(cache, elements);
 	}
 
-	public List<WebElement> findAll(By by) {
-		return findAll(by, true);
+	protected void setElements(List<WebElement> elements) {
+		elementsMap.put(DEFAULT_CACHE, elements);
 	}
 
-	public List<WebElement> findAll(By by, boolean cache) {
-		return findAll(by, false, cache, DEFAULT_CACHE);
+	// --------------------------------------------------------------
+
+	public List<WebElement> findAllD(By by) {
+		return findAll(false, null, by, DEFAULT_CACHE);
 	}
 
-	public List<WebElement> findAll(By by, String cache) {
-		return findAll(by, false, true, cache);
+	public List<WebElement> findAllD(By by, boolean cache) {
+		return findAll(false, null, by, ((cache) ? DEFAULT_CACHE : null));
 	}
 
-	public List<WebElement> findAllInElement(By by) {
-		return findAllInElement(by, true);
+	public List<WebElement> findAllD(By by, String cache) {
+		return findAll(false, null, by, cache);
 	}
 
-	public List<WebElement> findAllInElement(By by, boolean cache) {
-		return findAll(by, true, cache, DEFAULT_CACHE);
+	// --------------------------------------------------------------
+
+	public List<WebElement> findAllE(By by) {
+		return findAll(true, getElement(), by, DEFAULT_CACHE);
 	}
 
-	public List<WebElement> findAllInElement(By by, String cache) {
-		return findAll(by, true, true, cache);
+	public List<WebElement> findAllE(By by, boolean cache) {
+		return findAll(true, getElement(), by, ((cache) ? DEFAULT_CACHE : null));
 	}
 
-	protected List<WebElement> findAll(By by, boolean useElement, boolean cache, String cacheName) {
-		List<WebElement> elements = new LinkedList<>();
+	public List<WebElement> findAllE(By by, String cache) {
+		return findAll(true, getElement(cache), by, cache);
+	}
 
-		if (useElement && (!elementMap.containsKey(cacheName) || elementMap.get(cacheName) == null)) {
-			if (cache)
-				setElements(cacheName, elements);
-			return elements;
+	public List<WebElement> findAllE(By by, String inCache, String cache) {
+		return findAll(true, getElement(inCache), by, cache);
+	}
+
+	public List<WebElement> findAllE(WebElement element, By by) {
+		return findAll(true, element, by, DEFAULT_CACHE);
+	}
+
+	public List<WebElement> findAllE(WebElement element, By by, boolean cache) {
+		return findAll(true, element, by, ((cache) ? DEFAULT_CACHE : null));
+	}
+
+	public List<WebElement> findAllE(WebElement element, By by, String cache) {
+		return findAll(true, element, by, cache);
+	}
+
+	// --------------------------------------------------------------
+
+	private List<WebElement> findAll(boolean useElement, WebElement element, By by, String cache) {
+		if (useElement && element == null)
+			return new LinkedList<>();
+
+		List<WebElement> elements;
+		try {
+			elements = ((useElement) ? element : driver).findElements(by);
+		} catch (Exception ex) {
+			elements = new LinkedList<>();
 		}
 
-		elements = ((useElement) ? elementMap.get(cacheName) : driver).findElements(by);
-
-		if (cache)
-			elementsMap.put(cacheName, elements);
+		if (cache != null)
+			elementsMap.put(cache, elements);
 
 		return elements;
 	}
@@ -260,6 +342,14 @@ public abstract class AbstractScraping<O extends Object> implements WebDriver, C
 		return urls;
 	}
 
+	public String getAttribute(String name) {
+		return getAttribute(name, DEFAULT_CACHE);
+	}
+
+	public String getAttribute(String name, String cache) {
+		return getElement(cache).getAttribute(name);
+	}
+
 	// ###################################################################################
 	// ##################################### WRAPING #####################################
 	// ###################################################################################
@@ -298,10 +388,8 @@ public abstract class AbstractScraping<O extends Object> implements WebDriver, C
 		elementMap = new HashMap<>();
 		elementsMap = new HashMap<>();
 
-		if (driver != null) {
+		if (driver != null)
 			driver.close();
-			driver.quit();
-		}
 	}
 
 	@Override
@@ -334,5 +422,5 @@ public abstract class AbstractScraping<O extends Object> implements WebDriver, C
 		return driver.manage();
 	}
 
-	public abstract List<O> execute() throws Exception;
+	public abstract void execute() throws Exception;
 }

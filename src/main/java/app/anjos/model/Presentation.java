@@ -32,6 +32,9 @@ public class Presentation implements Model<Integer> {
 	private String ms;
 
 	@Column(length = 200)
+	private String originalName;
+
+	@Column(length = 200)
 	private String name;
 
 	@Column(name = "manual_price")
@@ -76,6 +79,8 @@ public class Presentation implements Model<Integer> {
 	@Column(name = "price_source")
 	private String priceSource;
 
+	private Boolean fractioned = false;
+
 	public Presentation() {}
 
 	@Override
@@ -102,6 +107,14 @@ public class Presentation implements Model<Integer> {
 
 	public void setMs(String ms) {
 		this.ms = ms;
+	}
+
+	public String getOriginalName() {
+		return originalName;
+	}
+
+	public void setOriginalName(String originalName) {
+		this.originalName = originalName;
 	}
 
 	public String getName() {
@@ -214,6 +227,14 @@ public class Presentation implements Model<Integer> {
 
 	public void setPriceSource(String priceSource) {
 		this.priceSource = priceSource;
+	}
+
+	public Boolean getFractioned() {
+		return fractioned;
+	}
+
+	public void setFractioned(Boolean fractioned) {
+		this.fractioned = fractioned;
 	}
 
 	@Override

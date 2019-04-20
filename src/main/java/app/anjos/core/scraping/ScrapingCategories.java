@@ -1,7 +1,8 @@
 package app.anjos.core.scraping;
 
-import app.anjos.core.scraping.farmadelivery.CategoriesFD;
+import app.anjos.core.scraping.consultaremedios.CategoriesCR;
 import app.anjos.model.Category;
+import io.matob.database.exception.DatabaseException;
 import io.matob.database.jpa.DAOJPA;
 import io.matob.database.jpa.DAOJPAFactory;
 import io.matob.database.jpa.EntityManagerController;
@@ -12,7 +13,7 @@ public class ScrapingCategories {
 
 	public static void main(String[] args) throws Exception {
 		AbstractScraping.setChromeDriver("chromedriver_73.exe");
-		AbstractScraping<Category> scraping = new CategoriesFD();
+		AbstractScraping<Category> scraping = new CategoriesCR();
 
 		EntityManagerController emc = new EntityManagerController();
 		try {
@@ -20,10 +21,15 @@ public class ScrapingCategories {
 			dao = DAOJPAFactory.createDAO(Category.class, emc);
 			dao.setUseTransaction(false);
 
-			for (Category c : scraping.execute())
-				dao.save(c);
+			scraping.execute();
+			for (Category c : scraping.getData()) {
+				if (dao.executeSingleQuery("name", c.getName()) == null)
+					dao.save(c);
+			}
 
 			emc.commit();
+
+			printAll();
 		} catch (Exception ex) {
 			emc.rollback();
 			throw ex;
@@ -31,5 +37,9 @@ public class ScrapingCategories {
 			emc.close();
 			scraping.close();
 		}
+	}
+
+	private static void printAll() throws DatabaseException {
+		dao.findAll(null).forEach((c) -> System.out.println(c));
 	}
 }

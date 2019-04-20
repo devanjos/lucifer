@@ -126,4 +126,10 @@ public class Category implements Model<Integer> {
 	public String getLabel() {
 		return name;
 	}
+
+	@Override
+	public String toString() {
+		String str = (parent != null) ? parent.toString() : "";
+		return (str.isEmpty()) ? name : str + ">" + name;
+	}
 }

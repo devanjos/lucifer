@@ -51,21 +51,36 @@ public class PresentationPersister {
 
 			emc.begin();
 			Product product;
+			Integer id;
+			Boolean shouldUpdate;
 			for (Presentation presentation : presentations) {
 				log("SAVE: " + presentation.getCode() + "\t" + presentation.getProduct().getName() + presentation.getName());
+
 				product = presentation.getProduct();
 				if (!productCache.containsKey(normalize(product.getName())))
 					persistProduct(product);
 				presentation.setProduct(productCache.get(normalize(product.getName())));
-				Integer id = dao.executeSingleQuery(new JPQLBuilder()
+
+				if (presentation.getImage() != null && presentation.getImage().getData() == null)
+					presentation.setImage(null);
+
+				id = dao.executeSingleQuery(new JPQLBuilder()
 						.select(new SField("m.id"))
 						.where(new Clause("m.code = :code"),
 								new Clause("m.ms = :ms"))
 						.addParameter("code", presentation.getCode())
 						.addParameter("ms", presentation.getMs()));
+
+				if (id != null) {
+					shouldUpdate = dao.executeSingleQuery(new JPQLBuilder()
+							.select(new SField("m.shouldUpdate"))
+							.where(new Clause("m.id = :id"))
+							.addParameter("id", presentation.getId()));
+					if (!shouldUpdate)
+						continue;
+				}
+
 				presentation.setId(id);
-				if (presentation.getImage() != null && presentation.getImage().getData() == null)
-					presentation.setImage(null);
 				dao.save(presentation);
 			}
 			emc.commit();

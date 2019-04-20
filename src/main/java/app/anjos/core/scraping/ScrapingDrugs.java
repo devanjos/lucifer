@@ -1,53 +1,98 @@
 package app.anjos.core.scraping;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import app.anjos.core.PresentationPersister;
 import app.anjos.core.scraping.consultaremedios.DrugsCR;
-import app.anjos.core.scraping.farmadelivery.DrugsFD;
+import app.anjos.model.Drug;
 import app.anjos.model.Presentation;
-import io.matob.database.jpa.DAOJPA;
-import io.matob.database.jpa.DAOJPAFactory;
-import io.matob.database.jpa.EntityManagerController;
+import io.matob.tools.FileUtils;
 
 public class ScrapingDrugs {
 
-	private static DAOJPA<Presentation> dao;
+	private static final boolean useFile = true;
+
+	private static Map<String, Presentation> presentationsMapCR;
+	private static Map<String, Presentation> presentationsMapFD;
 
 	public static void main(String[] args) throws Exception {
 		AbstractScraping.setChromeDriver("chromedriver_73.exe");
-		AbstractScraping<Presentation> scrapingCR = new DrugsCR();
-		AbstractScraping<Presentation> scrapingFD = new DrugsFD();
+		loadData();
 
-		EntityManagerController emc = new EntityManagerController();
-		try {
-			emc.begin();
-			dao = DAOJPAFactory.createDAO(Presentation.class, emc);
-			dao.setUseTransaction(false);
+		List<Presentation> presentations = new LinkedList<>();
 
-			List<Presentation> presentationsCR = scrapingCR.execute();
-			Map<String, Presentation> presentationsMapCR = new HashMap<>();
-			presentationsCR.forEach((p) -> presentationsMapCR.put(p.getCode(), p));
-			List<Presentation> presentationsFD = scrapingFD.execute();
-			Map<String, Presentation> presentationsMapFD = new HashMap<>();
-			presentationsFD.forEach((p) -> presentationsMapFD.put(p.getCode(), p));
+		Drug d1, d2;
+		Presentation p2;
+		boolean merged;
+		for (Presentation p1 : presentationsMapCR.values()) {
+			if (!presentationsMapFD.containsKey(p1.getCode())) {
+				useCategoryMapping(p1);
+				continue;
+			}
 
-			List<Presentation> presentations = new LinkedList<>();
+			p2 = presentationsMapFD.get(p1.getCode());
+			d1 = (Drug) p1.getProduct();
+			d2 = (Drug) p2.getProduct();
+			merged = false;
 
-			// TODO - Merge
+			if (p1.getImage() == null) {
+				p1.setImage(p2.getImage());
+				merged = true;
+			}
 
-			for (Presentation p : presentations)
-				dao.save(p);
+			if (d1.getIndications() == null || d1.getIndications().isEmpty()) {
+				d1.setIndications(d2.getIndications());
+				merged = true;
+			}
 
-			emc.commit();
-		} catch (Exception ex) {
-			emc.rollback();
-			throw ex;
-		} finally {
-			emc.close();
-			scrapingCR.close();
-			scrapingFD.close();
+			if (d1.getHowWorks() == null || d1.getHowWorks().isEmpty()) {
+				d1.setHowWorks(d2.getHowWorks());
+				merged = true;
+			}
+
+			if (d1.getContraindications() == null || d1.getContraindications().isEmpty()) {
+				d1.setContraindications(d2.getContraindications());
+				merged = true;
+			}
+
+			if (merged)
+				p1.setDataSource(p1.getDataSource() + "+" + p2.getDataSource());
+			presentations.add(p1);
 		}
+
+		new PresentationPersister(presentations).execute();
+	}
+
+	private static void useCategoryMapping(Presentation presentation) {}
+
+	private static void loadData() throws Exception {
+		String fileCR = "output/presentationsCR.obj";
+		if (!useFile || !new File(fileCR).exists()) {
+			presentationsMapCR = new HashMap<>();
+			try (AbstractScraping<Presentation> scrapingCR = new DrugsCR()) {
+				scrapingCR.execute();
+				List<Presentation> presentationsCR = scrapingCR.getData();
+				presentationsCR.forEach((p) -> presentationsMapCR.put(p.getCode(), p));
+				FileUtils.saveObject("", fileCR, presentationsMapCR);
+			}
+		} else {
+			FileUtils.loadObject(fileCR);
+		}
+
+		/*String fileFD = "output/presentationsFD.obj";
+		if (!useFile || !new File(fileFD).exists()) {
+			presentationsMapFD = new HashMap<>();
+			try (AbstractScraping<Presentation> scrapingFD = new DrugsFD()) {
+				scrapingFD.execute();
+				List<Presentation> presentationsFD = scrapingFD.getData();
+				presentationsFD.forEach((p) -> presentationsMapFD.put(p.getCode(), p));
+				FileUtils.saveObject("", fileFD, presentationsMapFD);
+			}
+		} else {
+			FileUtils.loadObject(fileFD);
+		}*/
 	}
 }

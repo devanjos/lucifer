@@ -28,6 +28,9 @@ public class Drug extends Product {
 	@Column(columnDefinition = "TEXT")
 	private String indications;
 
+	@Column(columnDefinition = "TEXT")
+	private String contraindications;
+
 	@Column(name = "how_works", columnDefinition = "TEXT")
 	private String howWorks;
 
@@ -53,6 +56,9 @@ public class Drug extends Product {
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
 
+	@Column(name = "bula_source")
+	private String bulaSource;
+
 	public Drug() {}
 
 	public Character getType() {
@@ -77,6 +83,14 @@ public class Drug extends Product {
 
 	public void setIndications(String indications) {
 		this.indications = indications;
+	}
+
+	public String getContraindications() {
+		return contraindications;
+	}
+
+	public void setContraindications(String contraindications) {
+		this.contraindications = contraindications;
 	}
 
 	public String getHowWorks() {
@@ -129,5 +143,13 @@ public class Drug extends Product {
 	@Override
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	public String getBulaSource() {
+		return bulaSource;
+	}
+
+	public void setBulaSource(String bulaSource) {
+		this.bulaSource = bulaSource;
 	}
 }

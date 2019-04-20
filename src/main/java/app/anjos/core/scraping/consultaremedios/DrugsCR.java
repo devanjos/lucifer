@@ -2,49 +2,97 @@ package app.anjos.core.scraping.consultaremedios;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import org.openqa.selenium.By;
 import app.anjos.core.scraping.AbstractScraping;
-import app.anjos.model.Category;
 import app.anjos.model.Presentation;
 
 public class DrugsCR extends AbstractScraping<Presentation> {
 
-	private String[] urls;
-	private List<Presentation> presentations;
+	private static final String BASE_URL = "https://consultaremedios.com.br/medicamentos/";
+	private static final String[] SECTIONS = new String[] { "0-9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
+			"Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
 
-	public DrugsCR() {
-		urls = new String[] {
-				"https://consultaremedios.com.br/categorias" //
-				/*,
-				"https://www.farmadelivery.com.br/saude-e-bem-estar",
-				"https://www.farmadelivery.com.br/dermocosmeticos",
-				"https://www.farmadelivery.com.br/dermocosmeticos"
-				 */
-		};
+	// Etapa 1
+	private String section;
 
-		presentations = new LinkedList<>();
+	// Etapa 2
+	private Queue<String> productsUrl;
+	private boolean endQueuing;
+
+	public DrugsCR() {}
+
+	public DrugsCR(String section) {
+		this.section = section;
+
+		productsUrl = new LinkedList<>();
+		endQueuing = false;
 	}
 
 	@Override
-	public List<Presentation> execute() throws Exception {
-		for (String c : urls)
-			execute(c, null);
-		return presentations;
+	public void execute() throws Exception {
+		if (section != null) {
+			scrapingSection(section);
+			return;
+		}
+
+		Thread job;
+		List<Thread> jobs = new LinkedList<>();
+		for (String s : SECTIONS) {
+			job = new Thread(() -> {
+				Thread.currentThread().setName("Section " + section);
+				try (DrugsCR scraping = new DrugsCR(s)) {
+					scraping.execute();
+				} catch (Exception e) {
+					System.err.println(section);
+					e.printStackTrace();
+				}
+			});
+			jobs.add(job);
+			job.start();
+		}
+
+		for (Thread j : jobs)
+			j.join();
 	}
 
-	private void execute(String url, Category parent) throws Exception {
-		visit(url);
+	private void scrapingSection(String section) {
+		new Thread(() -> {
+			Thread.currentThread().setName("Section " + section + "; Scraping Product");
+			consumeList();
+		}).start();
 
-		find(By.className("category-header__title"));
-		String name = getText();
-		Category category = new Category(name);
-		category.setParent(parent);
-		//presentations.add(category);
+		Thread.currentThread().setName("Section " + section + "; Create Queue");
+		listProductsURL();
+	}
 
-		find(By.className("category-link__list"));
-		List<String> urls = findUrlsInElement(url.replace("/categorias", "").replaceAll("\\.", "\\\\.") + "/.+");
-		urls.removeIf((u) -> url.equals(u));
-		for (String _url : urls)
-			execute(_url, category);
+	private void listProductsURL() {
+		int page = 1;
+		visit(BASE_URL + section + "?pagina=" + page);
+		while (!findAllD(By.className("content-grid__item")).isEmpty()) {
+			forEach((e) -> productsUrl.add(e.findElement(By.tagName("a")).getAttribute("href")));
+			visit(BASE_URL + section + "?pagina=" + (++page));
+		}
+		endQueuing = true;
+	}
+
+	private void consumeList() {
+		String url;
+
+		while (!endQueuing || productsUrl == null || !productsUrl.isEmpty()) {
+			while (productsUrl.isEmpty()) {
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {}
+			}
+			url = productsUrl.poll();
+			try (SubDrugsCR subScraping = new SubDrugsCR(url)) {
+				subScraping.execute();
+				addAllData(subScraping.getData());
+			} catch (Exception e) {
+				System.err.println(url);
+				e.printStackTrace();
+			}
+		}
 	}
 }
