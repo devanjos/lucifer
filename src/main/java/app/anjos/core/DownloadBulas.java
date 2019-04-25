@@ -28,14 +28,18 @@ public class DownloadBulas {
 			emc.begin();
 
 			List<Drug> drugs = dao.executeQuery(new JPQLBuilder()
-					.where(new Clause("m.bula IS NOT NULL")));
+					.where(new Clause("m.bulaSource IS NOT NULL")));
 
 			for (Drug d : drugs) {
-				d.setBula(downloadFile(d.getBula()));
-				dao.save(d);
+				try {
+					d.setBula(downloadFile(d.getBulaSource()));
+					dao.save(d);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
 			}
 
-			//emc.commit();
+			emc.commit();
 		} catch (Exception ex) {
 			emc.rollback();
 			throw ex;

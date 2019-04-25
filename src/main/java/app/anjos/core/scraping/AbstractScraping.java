@@ -49,6 +49,12 @@ public abstract class AbstractScraping<O extends Object> implements WebDriver, C
 		}
 	}
 
+	public void clear() {
+		elementMap.clear();
+		elementsMap.clear();
+		data.clear();
+	}
+
 	public List<O> getData() {
 		return data;
 	}
@@ -389,7 +395,7 @@ public abstract class AbstractScraping<O extends Object> implements WebDriver, C
 		elementsMap = new HashMap<>();
 
 		if (driver != null)
-			driver.close();
+			driver.quit();
 	}
 
 	@Override

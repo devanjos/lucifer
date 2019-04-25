@@ -43,6 +43,7 @@ public class DrugsCR extends AbstractScraping<Presentation> {
 				Thread.currentThread().setName("Section " + section);
 				try (DrugsCR scraping = new DrugsCR(s)) {
 					scraping.execute();
+					addAllData(scraping.getData());
 				} catch (Exception e) {
 					System.err.println(section);
 					e.printStackTrace();
@@ -58,12 +59,12 @@ public class DrugsCR extends AbstractScraping<Presentation> {
 
 	private void scrapingSection(String section) {
 		new Thread(() -> {
-			Thread.currentThread().setName("Section " + section + "; Scraping Product");
-			consumeList();
+			Thread.currentThread().setName("Section " + section + "; Create Queue");
+			listProductsURL();
 		}).start();
 
-		Thread.currentThread().setName("Section " + section + "; Create Queue");
-		listProductsURL();
+		Thread.currentThread().setName("Section " + section + "; Scraping Product");
+		consumeList();
 	}
 
 	private void listProductsURL() {
@@ -79,19 +80,25 @@ public class DrugsCR extends AbstractScraping<Presentation> {
 	private void consumeList() {
 		String url;
 
-		while (!endQueuing || productsUrl == null || !productsUrl.isEmpty()) {
-			while (productsUrl.isEmpty()) {
+		try (SubDrugsCR subScraping = new SubDrugsCR()) {
+			while (!endQueuing || productsUrl == null || !productsUrl.isEmpty()) {
+				while (productsUrl.isEmpty()) {
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {}
+				}
+
+				url = productsUrl.poll();
+
 				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {}
-			}
-			url = productsUrl.poll();
-			try (SubDrugsCR subScraping = new SubDrugsCR(url)) {
-				subScraping.execute();
-				addAllData(subScraping.getData());
-			} catch (Exception e) {
-				System.err.println(url);
-				e.printStackTrace();
+					subScraping.clear();
+					subScraping.setUrl(url);
+					subScraping.execute();
+					addAllData(subScraping.getData());
+				} catch (Exception e) {
+					System.err.println(url);
+					e.printStackTrace();
+				}
 			}
 		}
 	}

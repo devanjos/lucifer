@@ -12,7 +12,7 @@ public class ScrapingCategories {
 	private static DAOJPA<Category> dao;
 
 	public static void main(String[] args) throws Exception {
-		AbstractScraping.setChromeDriver("chromedriver_73.exe");
+		AbstractScraping.setChromeDriver("chromedriver.exe");
 		AbstractScraping<Category> scraping = new CategoriesCR();
 
 		EntityManagerController emc = new EntityManagerController();

@@ -10,7 +10,7 @@ import app.anjos.model.Presentation;
 public class DrugsFD extends AbstractScraping<Presentation> {
 
 	public static void main(String[] args) throws Exception {
-		AbstractScraping.setChromeDriver("chromedriver_73.exe");
+		AbstractScraping.setChromeDriver("chromedriver.exe");
 		try (AbstractScraping<Presentation> scraping = new DrugsFD()) {
 			scraping.execute();
 		}
@@ -46,6 +46,7 @@ public class DrugsFD extends AbstractScraping<Presentation> {
 			for (String url : URLS) {
 				try (DrugsFD scraping = new DrugsFD(url)) {
 					scraping.execute();
+					addAllData(scraping.getData());
 				}
 			}
 			return;

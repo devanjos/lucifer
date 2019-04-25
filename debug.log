@@ -1,2 +1,0 @@
-[0420/020250.821:ERROR:registration_protocol_win.cc(84)] TransactNamedPipe: O pipe foi finalizado. (0x6D)
-[0420/022123.305:ERROR:crashpad_client_win.cc(505)] CreateProcess: O arquivo de paginação é muito pequeno para que esta operação seja concluída. (0x5AF)

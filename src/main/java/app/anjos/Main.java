@@ -2,9 +2,9 @@ package app.anjos;
 
 import app.anjos.core.ConfigurePrice;
 import app.anjos.core.DisablePresentations;
+import app.anjos.core.DownloadBulas;
 import app.anjos.core.RemoveImages;
 import app.anjos.core.RunScripts;
-import app.anjos.core.DownloadBulas;
 import app.anjos.core.scraping.ScrapingCategories;
 import app.anjos.core.scraping.ScrapingDrugs;
 

@@ -22,7 +22,9 @@ public class SubDrugsCR extends AbstractScraping<Presentation> {
 
 	private String url;
 
-	public SubDrugsCR(String url) {
+	public SubDrugsCR() {}
+
+	public void setUrl(String url) {
 		this.url = url;
 	}
 
@@ -60,6 +62,7 @@ public class SubDrugsCR extends AbstractScraping<Presentation> {
 			addData(presentation);
 		});
 
+		boolean[] buscarEspecialidadesBulaPro = new boolean[] { false };
 		findAllD(By.className("extra-infos-block"));
 		forEach((e) -> {
 			setElement(e);
@@ -82,11 +85,15 @@ public class SubDrugsCR extends AbstractScraping<Presentation> {
 			} else if ("Categoria do Medicamento".equals(block)) {
 				drug.setCategory(new Category(value)); // Categoria do Medicamento
 			} else if ("Especialidades".equals(block)) {
-				String[] specialities = value.split(",");
-				List<Speciality> specialitiesList = new LinkedList<>();
-				for (String s : specialities)
-					specialitiesList.add(new Speciality(s.trim()));
-				drug.setSpecialities(specialitiesList); // Especialidades
+				if (!value.contains("…")) {
+					String[] specialities = value.split(",");
+					List<Speciality> specialitiesList = new LinkedList<>();
+					for (String s : specialities)
+						specialitiesList.add(new Speciality(s.trim()));
+					drug.setSpecialities(specialitiesList); // Especialidades
+				} else {
+					buscarEspecialidadesBulaPro[0] = true;
+				}
 			}
 		});
 
@@ -117,6 +124,21 @@ public class SubDrugsCR extends AbstractScraping<Presentation> {
 			bulaUrl = bulaUrl.replace("https://docs.google.com/gview?url=", "");
 			bulaUrl = bulaUrl.substring(0, bulaUrl.indexOf("?"));
 			drug.setBulaSource(bulaUrl);
+		}
+
+		if (buscarEspecialidadesBulaPro[0]) {
+			visit(getCurrentUrl().replace("https://", "https://pro.").substring(0, getCurrentUrl().length() - 1));
+			findD(By.id("product-information"));
+			findAllE(By.tagName("ul"));
+			forEach((e) -> {
+				if (e.getText().startsWith("Especialidades")) {
+					String[] specialities = e.findElement(By.className("list-info-prod-right")).getText().split(",");
+					List<Speciality> specialitiesList = new LinkedList<>();
+					for (String s : specialities)
+						specialitiesList.add(new Speciality(s.trim()));
+					drug.setSpecialities(specialitiesList); // Especialidades
+				}
+			});
 		}
 	}
 

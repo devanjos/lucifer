@@ -19,7 +19,7 @@ public class ScrapingDrugs {
 	private static Map<String, Presentation> presentationsMapFD;
 
 	public static void main(String[] args) throws Exception {
-		AbstractScraping.setChromeDriver("chromedriver_73.exe");
+		AbstractScraping.setChromeDriver("chromedriver.exe");
 		loadData();
 
 		List<Presentation> presentations = new LinkedList<>();
@@ -28,45 +28,41 @@ public class ScrapingDrugs {
 		Presentation p2;
 		boolean merged;
 		for (Presentation p1 : presentationsMapCR.values()) {
-			if (!presentationsMapFD.containsKey(p1.getCode())) {
-				useCategoryMapping(p1);
-				continue;
+			if (presentationsMapFD.containsKey(p1.getCode())) {
+				p2 = presentationsMapFD.get(p1.getCode());
+				d1 = (Drug) p1.getProduct();
+				d2 = (Drug) p2.getProduct();
+				merged = false;
+
+				if (p1.getImage() == null) {
+					p1.setImage(p2.getImage());
+					merged = true;
+				}
+
+				if (d1.getIndications() == null || d1.getIndications().isEmpty()) {
+					d1.setIndications(d2.getIndications());
+					merged = true;
+				}
+
+				if (d1.getHowWorks() == null || d1.getHowWorks().isEmpty()) {
+					d1.setHowWorks(d2.getHowWorks());
+					merged = true;
+				}
+
+				if (d1.getContraindications() == null || d1.getContraindications().isEmpty()) {
+					d1.setContraindications(d2.getContraindications());
+					merged = true;
+				}
+
+				if (merged)
+					p1.setDataSource(p1.getDataSource() + "+" + p2.getDataSource());
 			}
 
-			p2 = presentationsMapFD.get(p1.getCode());
-			d1 = (Drug) p1.getProduct();
-			d2 = (Drug) p2.getProduct();
-			merged = false;
-
-			if (p1.getImage() == null) {
-				p1.setImage(p2.getImage());
-				merged = true;
-			}
-
-			if (d1.getIndications() == null || d1.getIndications().isEmpty()) {
-				d1.setIndications(d2.getIndications());
-				merged = true;
-			}
-
-			if (d1.getHowWorks() == null || d1.getHowWorks().isEmpty()) {
-				d1.setHowWorks(d2.getHowWorks());
-				merged = true;
-			}
-
-			if (d1.getContraindications() == null || d1.getContraindications().isEmpty()) {
-				d1.setContraindications(d2.getContraindications());
-				merged = true;
-			}
-
-			if (merged)
-				p1.setDataSource(p1.getDataSource() + "+" + p2.getDataSource());
 			presentations.add(p1);
 		}
 
 		new PresentationPersister(presentations).execute();
 	}
-
-	private static void useCategoryMapping(Presentation presentation) {}
 
 	private static void loadData() throws Exception {
 		String fileCR = "output/presentationsCR.obj";
@@ -79,9 +75,10 @@ public class ScrapingDrugs {
 				FileUtils.saveObject("", fileCR, presentationsMapCR);
 			}
 		} else {
-			FileUtils.loadObject(fileCR);
+			presentationsMapCR = FileUtils.loadObject(fileCR);
 		}
 
+		presentationsMapFD = new HashMap<>();
 		/*String fileFD = "output/presentationsFD.obj";
 		if (!useFile || !new File(fileFD).exists()) {
 			presentationsMapFD = new HashMap<>();
@@ -92,7 +89,7 @@ public class ScrapingDrugs {
 				FileUtils.saveObject("", fileFD, presentationsMapFD);
 			}
 		} else {
-			FileUtils.loadObject(fileFD);
+			presentationsMapFD = FileUtils.loadObject(fileFD);
 		}*/
 	}
 }
