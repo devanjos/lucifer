@@ -53,13 +53,15 @@ public class PresentationPersister {
 			Product product;
 			Integer id;
 			Boolean shouldUpdate;
+			String key;
 			for (Presentation presentation : presentations) {
 				log("SAVE: " + presentation.getCode() + "\t" + presentation.getProduct().getName() + presentation.getName());
 
 				product = presentation.getProduct();
-				if (!productCache.containsKey(normalize(product.getName())))
+				key = normalize(product.getName()) + "+" + normalize(product.getSupplier().getName());
+				if (!productCache.containsKey(key))
 					persistProduct(product);
-				presentation.setProduct(productCache.get(normalize(product.getName())));
+				presentation.setProduct(productCache.get(key));
 
 				if (presentation.getImage() != null && presentation.getImage().getData() == null)
 					presentation.setImage(null);
@@ -107,7 +109,7 @@ public class PresentationPersister {
 				.forEach((s) -> substanceCache.put(normalize(s.getName()), s));
 		DAOJPAFactory.createDAO(Product.class, emc)
 				.findAll(null)
-				.forEach((s) -> productCache.put(normalize(s.getName()), s));
+				.forEach((s) -> productCache.put(normalize(s.getName()) + "+" +normalize(s.getSupplier().getName()), s));
 	}
 
 	private void persistProduct(Product value) throws DatabaseException {
@@ -147,7 +149,8 @@ public class PresentationPersister {
 		DAOJPA<Product> dao = DAOJPAFactory.createDAO(Product.class, emc);
 		dao.setUseTransaction(false);
 		value = dao.save(value);
-		productCache.put(normalize(value.getName()), value);
+		String key = normalize(value.getName()) + "+" + normalize(value.getSupplier().getName());
+		productCache.put(key, value);
 	}
 
 	private void persistSupplier(Supplier value) throws DatabaseException {

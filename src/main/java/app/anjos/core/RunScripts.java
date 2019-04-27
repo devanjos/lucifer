@@ -53,12 +53,12 @@ public class RunScripts {
 	private static void configureFeaturedProducts(DAOJPA<Presentation> dao) throws DatabaseException {
 		dao.executeNativeUpdate("UPDATE product p SET p.featured = false;");
 		dao.executeNativeUpdate("UPDATE product p INNER JOIN supplier s ON s.id = p.supplier_id SET p.featured = true WHERE p.name IN ("
-				+ "'Repoflor', "
+				+ "'Repoflor Comprimido', "
 				+ "'Seakalm', "
 				+ "'Expec', "
 				+ "'Vodol Prevent', "
-				+ "'Neosoro', "
-				+ "'Colírio Geolab')"
+				+ "'Neosoro')"
+				+ " OR p.name = 'Colírio' AND s.name = Geolab'"
 				+ " OR p.name = 'Citrato de Sildenafila' AND s.name = 'Neo Química';");
 	}
 }

@@ -18,6 +18,8 @@ public class ScrapingDrugs {
 	private static Map<String, Presentation> presentationsMapCR;
 	private static Map<String, Presentation> presentationsMapFD;
 
+	private static boolean singleThread = true;
+
 	public static void main(String[] args) throws Exception {
 		AbstractScraping.setChromeDriver("chromedriver.exe");
 		loadData();
@@ -68,7 +70,8 @@ public class ScrapingDrugs {
 		String fileCR = "output/presentationsCR.obj";
 		if (!useFile || !new File(fileCR).exists()) {
 			presentationsMapCR = new HashMap<>();
-			try (AbstractScraping<Presentation> scrapingCR = new DrugsCR()) {
+			try (DrugsCR scrapingCR = new DrugsCR()) {
+				scrapingCR.setSingleThread(singleThread);
 				scrapingCR.execute();
 				List<Presentation> presentationsCR = scrapingCR.getData();
 				presentationsCR.forEach((p) -> presentationsMapCR.put(p.getCode(), p));

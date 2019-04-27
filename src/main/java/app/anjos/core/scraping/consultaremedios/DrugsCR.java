@@ -20,6 +20,8 @@ public class DrugsCR extends AbstractScraping<Presentation> {
 	private Queue<String> productsUrl;
 	private boolean endQueuing;
 
+	private boolean singleThread = false;
+
 	public DrugsCR() {}
 
 	public DrugsCR(String section) {
@@ -27,6 +29,10 @@ public class DrugsCR extends AbstractScraping<Presentation> {
 
 		productsUrl = new LinkedList<>();
 		endQueuing = false;
+	}
+
+	public void setSingleThread(boolean singleThread) {
+		this.singleThread = singleThread;
 	}
 
 	@Override
@@ -51,6 +57,8 @@ public class DrugsCR extends AbstractScraping<Presentation> {
 			});
 			jobs.add(job);
 			job.start();
+			if (singleThread)
+				job.join();
 		}
 
 		for (Thread j : jobs)
