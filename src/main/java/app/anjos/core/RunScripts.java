@@ -58,7 +58,7 @@ public class RunScripts {
 				+ "'Expec', "
 				+ "'Vodol Prevent', "
 				+ "'Neosoro')"
-				+ " OR p.name = 'Colírio' AND s.name = Geolab'"
-				+ " OR p.name = 'Citrato de Sildenafila' AND s.name = 'Neo Química';");
+				+ " OR (p.name = 'Colírio' AND s.name = 'Geolab')"
+				+ " OR (p.name = 'Citrato de Sildenafila' AND s.name = 'Neo Química');");
 	}
 }

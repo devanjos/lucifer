@@ -53,8 +53,8 @@ public class SubDrugsCR extends AbstractScraping<Presentation> {
 			presentation.setName(getAttribute("title").replace(productName, "").trim()); // Nome da Apresentação
 
 			findE(e, By.className("presentation-offer-info__img"));
-			Image image = new Image("jpg", getByteArrayFromImageURL(getAttribute("data-src")));
-			if (image.getData() != null && !image.getData().isEmpty())
+			Image image = getImage(getAttribute("data-src"));
+			if (image != null && image.getData() != null && !image.getData().isEmpty())
 				presentation.setImage(image); // URL da imagem
 
 			presentation.setProduct(drug);
@@ -163,13 +163,23 @@ public class SubDrugsCR extends AbstractScraping<Presentation> {
 			return 'O';
 	}
 
-	private static String getByteArrayFromImageURL(String urlStr) {
+	public static void main(String[] args) {
+
+	}
+
+	private static Image getImage(String url) {
 		try {
-			if (urlStr.toLowerCase().contains("product_images_configuration"))
+			if (url.toLowerCase().contains("product_images_configuration"))
 				return null;
 
-			URL url = new URL(urlStr);
-			HttpURLConnection connection = (HttpURLConnection) url
+			String format = "jpg";
+			if (url.matches("(.+)(\\?\\d+)"))
+				url = url.substring(0, url.lastIndexOf('?'));
+			if (url.matches("(.+)(\\.(jpg|png|jpeg)"))
+				format = url.substring(url.lastIndexOf('.'));
+
+			URL _url = new URL(url);
+			HttpURLConnection connection = (HttpURLConnection) _url
 					.openConnection();
 			connection.setRequestProperty(
 					"User-Agent",
@@ -177,8 +187,10 @@ public class SubDrugsCR extends AbstractScraping<Presentation> {
 			BufferedImage image = ImageIO.read(connection.getInputStream());
 
 			final ByteArrayOutputStream os = new ByteArrayOutputStream();
-			ImageIO.write(image, "png", os);
-			return Base64.getEncoder().encodeToString(os.toByteArray());
+			ImageIO.write(image, format, os);
+			String data = Base64.getEncoder().encodeToString(os.toByteArray());
+
+			return new Image(format, data);
 		} catch (Exception e) {
 			return null;
 		}

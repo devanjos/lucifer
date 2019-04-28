@@ -1,6 +1,12 @@
 package app.anjos.core;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Base64;
 import java.util.List;
+import app.anjos.model.Drug;
 import app.anjos.model.Image;
 import app.anjos.model.Presentation;
 import app.anjos.model.Product;
@@ -16,9 +22,86 @@ import io.matob.database.util.sql.join.LeftJoin;
 
 public class RemoveImages {
 
+	private static final String DIR_IMAGES = "files/imagens";
+
 	public static void main(String[] args) throws Exception {
 		removeNull();
 		removeDuplicates();
+		setImages();
+	}
+
+	private static void setImages() throws Exception {
+		String code, format, data;
+		JPQLBuilder jpql, subquery;
+		Drug d;
+
+		EntityManagerController emc = new EntityManagerController();
+		DAOJPA<Drug> dao;
+		try {
+			emc.begin();
+			dao = DAOJPAFactory.createDAO(Drug.class, emc);
+			dao.setUseTransaction(false);
+			for (File f : new File(DIR_IMAGES).listFiles()) {
+				code = f.getName().substring(0, f.getName().lastIndexOf('.'));
+				format = f.getName().substring(f.getName().lastIndexOf('.') + 1);
+				data = encodeFileToBase64Binary(f);
+
+				subquery = new JPQLBuilder(Presentation.class)
+						.setAlias("pr")
+						.where(new Clause("pr.code = :code"),
+								new Clause("pr.product.id = d.id"))
+						.addParameter("code", code);
+
+				jpql = new JPQLBuilder().where(new Clause("EXISTS(" + subquery.build() + ")"));
+
+				d = dao.executeSingleQuery(jpql);
+				if (d == null) {
+					System.out.println("[Set Image] Produto não encontrado, EAN: " + code);
+					continue;
+				}
+
+				if (d.getImage() == null)
+					d.setImage(new Image());
+				d.getImage().setFormat(format);
+				d.getImage().setData(data);
+			}
+
+			emc.commit();
+		} catch (Exception ex) {
+			emc.rollback();
+			throw ex;
+		} finally {
+			emc.close();
+		}
+	}
+
+	private static String encodeFileToBase64Binary(File file) throws IOException {
+		byte[] bytes = loadFile(file);
+		byte[] encoded = Base64.getEncoder().encode(bytes);
+		String encodedString = new String(encoded);
+
+		return encodedString;
+	}
+
+	private static byte[] loadFile(File file) throws IOException {
+		byte[] bytes;
+		try (InputStream is = new FileInputStream(file)) {
+			long length = file.length();
+			if (length > Integer.MAX_VALUE) {
+				throw new IOException("File to large " + file.getName());
+			}
+			bytes = new byte[(int) length];
+			int offset = 0;
+			int numRead = 0;
+			while (offset < bytes.length
+					&& (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+				offset += numRead;
+			}
+			if (offset < bytes.length) {
+				throw new IOException("Could not completely read file " + file.getName());
+			}
+		}
+		return bytes;
 	}
 
 	private static void removeNull() throws Exception {
@@ -47,6 +130,7 @@ public class RemoveImages {
 
 	private static void removeDuplicates() throws Exception {
 		EntityManagerController emc = new EntityManagerController();
+
 		try {
 			DAOJPA<Product> prodDao = DAOJPAFactory.createDAO(Product.class, emc);
 			prodDao.setUseTransaction(false);
