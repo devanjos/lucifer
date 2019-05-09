@@ -28,6 +28,7 @@ public class PresentationPersister {
 	private Map<String, Substance> substanceCache;
 	private Map<String, Category> categoryCache;
 	private Map<String, Product> productCache;
+	private Map<String, Presentation> presentationCache;
 	private List<Presentation> presentations;
 
 	public PresentationPersister(List<Presentation> presentations) {
@@ -39,6 +40,7 @@ public class PresentationPersister {
 		substanceCache = new HashMap<>();
 		categoryCache = new HashMap<>();
 		productCache = new HashMap<>();
+		presentationCache = new HashMap<>();
 	}
 
 	public void execute() throws Exception {
@@ -57,8 +59,13 @@ public class PresentationPersister {
 			for (Presentation presentation : presentations) {
 				log("SAVE: " + presentation.getCode() + "\t" + presentation.getProduct().getName() + presentation.getName());
 
+				if (presentationCache.containsKey(presentation.getCode()))
+					presentation.setId(presentationCache.get(presentation.getCode()).getId());
+
 				product = presentation.getProduct();
-				key = normalize(product.getName()) + "+" + normalize(product.getSupplier().getName());
+				if (product.getName().endsWith(product.getSupplier().getName()))
+					product.setName(product.getName().replaceAll(" ? -? ?" + product.getSupplier().getName(), "").trim());
+				key = normalize(normalize(product.getName())) + "+" + normalize(product.getSupplier().getName());
 				if (!productCache.containsKey(key))
 					persistProduct(product);
 				presentation.setProduct(productCache.get(key));
@@ -109,7 +116,10 @@ public class PresentationPersister {
 				.forEach((s) -> substanceCache.put(normalize(s.getName()), s));
 		DAOJPAFactory.createDAO(Product.class, emc)
 				.findAll(null)
-				.forEach((s) -> productCache.put(normalize(s.getName()) + "+" +normalize(s.getSupplier().getName()), s));
+				.forEach((s) -> productCache.put(normalize(s.getName()) + "+" + normalize(s.getSupplier().getName()), s));
+		DAOJPAFactory.createDAO(Presentation.class, emc)
+				.findAll(null)
+				.forEach((s) -> presentationCache.put(s.getCode(), s));
 	}
 
 	private void persistProduct(Product value) throws DatabaseException {
@@ -117,9 +127,6 @@ public class PresentationPersister {
 		if (!supplierCache.containsKey(normalize(supplier.getName())))
 			persistSupplier(supplier);
 		value.setSupplier(supplierCache.get(normalize(supplier.getName())));
-
-		if (value.getName().endsWith(supplier.getName()))
-			value.setName(value.getName().replaceAll(" ? -? ?" + supplier.getName(), "").trim());
 
 		Category category = value.getCategory();
 		if (!categoryCache.containsKey(normalize(category.getName())))

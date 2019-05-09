@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 import java.util.List;
-import app.anjos.model.Drug;
 import app.anjos.model.Image;
 import app.anjos.model.Presentation;
 import app.anjos.model.Product;
@@ -20,7 +19,7 @@ import io.matob.database.util.sql.clause.Operator;
 import io.matob.database.util.sql.join.InnerJoin;
 import io.matob.database.util.sql.join.LeftJoin;
 
-public class RemoveImages {
+public class ConfigureImages {
 
 	private static final String DIR_IMAGES = "files/imagens";
 
@@ -32,38 +31,37 @@ public class RemoveImages {
 
 	private static void setImages() throws Exception {
 		String code, format, data;
-		JPQLBuilder jpql, subquery;
-		Drug d;
+		JPQLBuilder jpql;
+		Presentation pr;
 
 		EntityManagerController emc = new EntityManagerController();
-		DAOJPA<Drug> dao;
+		DAOJPA<Presentation> dao;
 		try {
 			emc.begin();
-			dao = DAOJPAFactory.createDAO(Drug.class, emc);
+			dao = DAOJPAFactory.createDAO(Presentation.class, emc);
 			dao.setUseTransaction(false);
 			for (File f : new File(DIR_IMAGES).listFiles()) {
 				code = f.getName().substring(0, f.getName().lastIndexOf('.'));
 				format = f.getName().substring(f.getName().lastIndexOf('.') + 1);
 				data = encodeFileToBase64Binary(f);
 
-				subquery = new JPQLBuilder(Presentation.class)
+				jpql = new JPQLBuilder(Presentation.class)
 						.setAlias("pr")
-						.where(new Clause("pr.code = :code"),
-								new Clause("pr.product.id = d.id"))
+						.where(new Clause("pr.code = :code"))
 						.addParameter("code", code);
 
-				jpql = new JPQLBuilder().where(new Clause("EXISTS(" + subquery.build() + ")"));
-
-				d = dao.executeSingleQuery(jpql);
-				if (d == null) {
+				pr = dao.executeSingleQuery(jpql);
+				if (pr == null) {
 					System.out.println("[Set Image] Produto não encontrado, EAN: " + code);
 					continue;
 				}
 
-				if (d.getImage() == null)
-					d.setImage(new Image());
-				d.getImage().setFormat(format);
-				d.getImage().setData(data);
+				if (pr.getImage() != null)
+					continue;
+
+				pr.setImage(new Image());
+				pr.getImage().setFormat(format);
+				pr.getImage().setData(data);
 			}
 
 			emc.commit();

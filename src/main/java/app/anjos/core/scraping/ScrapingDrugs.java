@@ -18,7 +18,7 @@ public class ScrapingDrugs {
 	private static Map<String, Presentation> presentationsMapCR;
 	private static Map<String, Presentation> presentationsMapFD;
 
-	private static boolean singleThread = true;
+	private static boolean singleThread = false;
 
 	public static void main(String[] args) throws Exception {
 		AbstractScraping.setChromeDriver("chromedriver.exe");
