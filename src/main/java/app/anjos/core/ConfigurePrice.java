@@ -99,11 +99,6 @@ public class ConfigurePrice {
 			if (pr == null)
 				continue;
 
-			if (pricePharmacy > priceAnjos) {
-				priceAnjos = priceAnjos + pricePharmacy;
-				pricePharmacy = priceAnjos - pricePharmacy;
-			}
-
 			pr.setPriceSource(priceSource);
 			pr.setManualPrice(true);
 			if (priceAnjos > 0)
